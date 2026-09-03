@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>그룹 여행지 추천 데모</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo">🧭</div>
+    <div>
+      <h1>그룹 여행지 추천 파이프라인 데모</h1>
+      <div class="sub">다자간 대화 → 개인·그룹 선호 요약 (LLM) → bge-m3 임베딩 검색 → 카테고리 필터 + Nash 합의 재랭킹 → LLM 검수 → 부분충족 백필 → 최종 추천</div>
+    </div>
+  </div>
+  <div class="status" id="status"><span class="dot"></span><span id="status-text">서버 확인 중…</span></div>
+</header>
+
+<main class="layout">
+  <aside class="side">
+    <div class="side-head">
+      <h2>대화록</h2>
+      <span class="hint">하나를 선택하세요</span>
+    </div>
+    <ul id="dlist" class="dlist"></ul>
+  </aside>
+
+  <section class="stage">
+    <div class="runhead card">
+      <div class="runtitle">
+        <span class="did" id="r-did">대화록을 선택하세요</span>
+        <span class="badge" id="r-label"></span>
+      </div>
+      <div class="runctl">
+        <label class="rsel">권역 <select id="region"></select></label>
+        <button id="btn-live" class="btn" disabled>▶ 실제 실행 (LLM)</button>
+        <button id="btn-pre" class="btn ghost" disabled>사전 계산 결과 보기</button>
+        <label class="chk" title="같은 대화를 다른 권역으로 다시 돌릴 때 요약 단계를 재사용"><input type="checkbox" id="skip-sum"> 요약 재사용</label>
+      </div>
+    </div>
+
+    <div id="progress" class="card progress" hidden>
+      <ol id="stepper" class="stepper">
+        <li class="step" data-step="1"><span class="n">1</span><span class="t">대화 요약<span class="ms"></span></span></li>
+        <li class="step" data-step="2"><span class="n">2</span><span class="t">임베딩 검색<span class="ms"></span></span></li>
+        <li class="step" data-step="3"><span class="n">3</span><span class="t">Nash 합의<span class="ms"></span></span></li>
+        <li class="step" data-step="4"><span class="n">4</span><span class="t">필터 + 재랭킹 + LLM 검수<span class="ms"></span></span></li>
+        <li class="step" data-step="5"><span class="n">5</span><span class="t">부분충족 백필<span class="ms"></span></span></li>
+        <li class="step" data-step="6"><span class="n">6</span><span class="t">대시보드<span class="ms"></span></span></li>
+      </ol>
+      <div class="prog-row">
+        <span id="prog-msg" class="prog-msg"></span>
+        <span id="prog-time" class="prog-time"></span>
+        <button id="btn-log" class="btn tiny ghost">로그 보기</button>
+      </div>
+      <pre id="log" class="log" hidden></pre>
+    </div>
+
+    <div id="transcript-card" class="card" hidden>
+      <h3>입력 대화</h3>
+      <div id="transcript" class="transcript"></div>
+    </div>
+
+    <div id="result-card" class="card result" hidden>
+      <div class="result-head">
+        <h3 id="result-title">결과</h3>
+        <a id="result-open" class="link" target="_blank" rel="noopener">새 창에서 열기 ↗</a>
+      </div>
+      <iframe id="result" class="result-frame" title="추천 결과 대시보드"></iframe>
+    </div>
+
+    <div id="empty" class="empty">
+      <div class="empty-icon">💬</div>
+      <p>왼쪽에서 대화록을 고르고 권역을 선택한 뒤 <b>▶ 실제 실행</b>을 누르면, 연구실 GPU 서버에서 파이프라인이 실제로 실행되고 단계별 진행 상황과 결과가 표시됩니다. 약 3~5분이 걸립니다.</p>
+      <p class="muted">서버가 꺼져 있거나 기다리기 어려우면 <b>사전 계산 결과 보기</b>로 같은 파이프라인이 미리 산출한 결과를 바로 볼 수 있습니다.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  요약·검수 모델: Gemma-4-26B-A4B (로컬 GB10) · 검색: bge-m3 · 합의: Wilson 점수 + Nash 곱 · 대화록은 페르소나 기반 생성 데이터
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
