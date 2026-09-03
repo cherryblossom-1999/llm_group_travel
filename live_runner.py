@@ -199,7 +199,7 @@ def run_live(did: str, region: str, *, text: str | None = None,
             region_v3.mkdir(parents=True, exist_ok=True)
             for name in ("query_summaries_new.refined.jsonl", "query_summaries_new.refined.txt"):
                 src = found.parent / name
-                if src.exists():
+                if src.exists() and src.resolve() != (region_v3 / name).resolve():
                     shutil.copyfile(src, region_v3 / name)
             skip_flag = ["--skip-summarize"]
             log({"type": "log", "text": f"요약 재사용: {found.parent.name}"})

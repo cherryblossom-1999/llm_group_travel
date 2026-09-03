@@ -11,6 +11,6 @@ if [ "${1:-}" = "stop" ]; then
   exit 0
 fi
 pkill -f "uvicorn server:app" 2>/dev/null
-nohup "$PY" -m uvicorn server:app --host 0.0.0.0 --port "$PORT" --log-level info > server.log 2>&1 &
+setsid nohup "$PY" -m uvicorn server:app --host 0.0.0.0 --port "$PORT" --log-level info > server.log 2>&1 &
 sleep 2
 curl -s "http://127.0.0.1:$PORT/api/health" && echo

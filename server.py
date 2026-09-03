@@ -79,7 +79,7 @@ class Job:
 
 JOBS: dict[str, Job] = {}
 QUEUE: deque[Job] = deque()
-_qlock = threading.Lock()
+_qlock = threading.RLock()   # health() 안에서 to_dict()->queue_position() 재진입
 _current: Job | None = None
 
 
