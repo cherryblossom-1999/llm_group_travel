@@ -41,21 +41,40 @@
       </div>
     </div>
 
+    <div id="attach" class="card attach" hidden>
+      <span class="dot-live"></span>
+      <span id="attach-text">서버에서 다른 실행이 진행 중입니다.</span>
+      <button id="btn-attach" class="btn tiny">진행 상황 보기</button>
+    </div>
+
     <div id="progress" class="card progress" hidden>
+      <div class="now">
+        <div class="now-left">
+          <span class="spinner" id="now-spin"></span>
+          <div>
+            <div class="now-stage" id="now-stage">준비 중…</div>
+            <div class="now-detail" id="now-detail"></div>
+          </div>
+        </div>
+        <div class="now-right">
+          <div class="now-time" id="prog-time"></div>
+          <div class="now-eta" id="prog-eta"></div>
+        </div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
       <ol id="stepper" class="stepper">
-        <li class="step" data-step="1"><span class="n">1</span><span class="t">대화 요약<span class="ms"></span></span></li>
+        <li class="step" data-step="1"><span class="n">1</span><span class="t">대화 요약 (LLM)<span class="ms"></span></span></li>
         <li class="step" data-step="2"><span class="n">2</span><span class="t">임베딩 검색<span class="ms"></span></span></li>
         <li class="step" data-step="3"><span class="n">3</span><span class="t">Nash 합의<span class="ms"></span></span></li>
         <li class="step" data-step="4"><span class="n">4</span><span class="t">필터 + 재랭킹 + LLM 검수<span class="ms"></span></span></li>
-        <li class="step" data-step="5"><span class="n">5</span><span class="t">부분충족 백필<span class="ms"></span></span></li>
+        <li class="step" data-step="5"><span class="n">5</span><span class="t">부분충족 백필 (LLM)<span class="ms"></span></span></li>
         <li class="step" data-step="6"><span class="n">6</span><span class="t">대시보드<span class="ms"></span></span></li>
       </ol>
       <div class="prog-row">
         <span id="prog-msg" class="prog-msg"></span>
-        <span id="prog-time" class="prog-time"></span>
-        <button id="btn-log" class="btn tiny ghost">로그 보기</button>
+        <button id="btn-log" class="btn tiny ghost">로그 닫기</button>
       </div>
-      <pre id="log" class="log" hidden></pre>
+      <pre id="log" class="log"></pre>
     </div>
 
     <div id="transcript-card" class="card" hidden>
