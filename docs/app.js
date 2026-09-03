@@ -6,7 +6,7 @@
 const CFG = window.DEMO_CONFIG || {};
 const API = (CFG.apiBase || '').replace(/\/$/, '');
 const REGIONS = ['강원도', '경상남도', '경상북도', '수도권', '전라남도', '전라북도', '제주도', '충청남도', '충청북도'];
-const CONSENSUS = { hi: '합의 높음', lo: '합의 낮음' };
+const CONSENSUS = { hi: '합의 낮음', lo: '합의 높음' };  // d_hi = 갈등 높음(합의 낮음), d_lo = 갈등 낮음(합의 높음)
 // 단계별 이름 / 평균 소요(초, 실측) — 진행 바·예상 남은 시간 계산용
 const STAGES = [
   { name: '대화 요약 (LLM)', detail: 'Gemma가 참가자별 선호와 그룹 쿼리를 생성하고 self-refine 합니다', sec: 120 },
