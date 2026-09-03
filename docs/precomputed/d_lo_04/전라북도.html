@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>그룹 여행 추천 대시보드 v4 final_2 (부분충족 백필)</title>
+<style>
+ :root{--accent:#4C72B0;--accent2:#55A868;}
+ *{box-sizing:border-box}
+ body{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;margin:0;color:#1a1a1a;background:#f4f5f7}
+ header{background:#fff;border-bottom:1px solid #e3e3e3;padding:14px 22px;position:sticky;top:0;z-index:5}
+ header h1{font-size:18px;margin:0 0 8px}
+ select{font-size:14px;padding:5px 9px;margin-right:12px;border:1px solid #ccc;border-radius:6px}
+ .wrap{display:flex;gap:18px;padding:18px 22px;align-items:flex-start}
+ .left{flex:0 0 420px;max-width:420px;display:flex;flex-direction:column;gap:14px}
+ .right{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+ .card{background:#fff;border:1px solid #e3e3e3;border-radius:10px;padding:14px}
+ .card h2{font-size:14px;margin:0 0 10px;border-left:4px solid var(--accent);padding-left:8px}
+ .gq{background:#eef3fb;border-radius:8px;padding:10px;font-size:14px;line-height:1.5}
+ .tag{display:inline-block;background:#e8eefc;color:#33518a;border-radius:20px;padding:2px 9px;font-size:12px;margin:2px 3px 2px 0}
+ .turn{display:flex;gap:8px;margin:7px 0;font-size:13px;line-height:1.45}
+ .who{flex:0 0 64px;font-weight:600;color:#33518a;text-align:right}
+ .utt{background:#f6f7f9;border-radius:8px;padding:6px 10px;flex:1}
+ .spk{border:1px solid #eee;border-radius:8px;padding:8px 10px;margin:7px 0;background:#fcfcfd}
+ .spk .nm{font-weight:600;font-size:13px}
+ .spk .q{font-size:13px;color:#444;margin:3px 0}
+ .cols{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+ .col{min-width:200px;flex:1;background:#fafbfc;border:1px solid #e7e7e7;border-radius:8px;padding:8px}
+ .col h3{font-size:12px;margin:0 0 8px;text-align:center;color:#333}
+ .spot{position:relative;padding:4px 7px;margin:3px 0;border-radius:6px;font-size:12px;display:flex;justify-content:space-between;gap:6px;background:#fff;border:1px solid #eee;cursor:default}
+ .spot .rk{color:#aaa;font-variant-numeric:tabular-nums;flex:0 0 18px}
+ .spot .nm{flex:1}
+ .spot .tip,.slot .tip{visibility:hidden;opacity:0;position:absolute;z-index:30;left:50%;top:125%;transform:translateX(-50%);
+   width:240px;background:#222;color:#fff;font-size:12px;line-height:1.5;padding:8px 10px;border-radius:8px;font-weight:400;
+   box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .12s;white-space:normal;text-align:left}
+ .spot .tip::after,.slot .tip::after{content:"";position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:#222}
+ .spot:hover .tip,.slot:hover .tip{visibility:visible;opacity:1}
+ .finalgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+ .slot{position:relative;border:1px solid #e7e7e7;border-radius:8px;padding:7px 10px;font-size:13px;display:flex;gap:8px;background:#fff;cursor:default}
+ .slot.pass{border-color:#dfe6f2}
+ .slot.empty{color:#c0c0c0;background:#fafafa;border-style:dashed}
+ .slot.partial{border-color:#f0ad4e;background:#fff8ec}
+ .slot .rk{color:#999;flex:0 0 20px;font-weight:600}
+ .slot .nm{flex:1}
+ .whyrow{border:1px solid #ececec;border-radius:8px;padding:10px;margin:8px 0;background:#fff}
+ .whyrow .h{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+ .whyrow .sent{font-size:13px;color:#444;margin:6px 0}
+ .uwrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+ .ub{font-size:12px;min-width:108px}
+ .ub .lab{display:flex;justify-content:space-between;color:#555}
+ .track{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:2px}
+ .fill{height:8px;background:var(--accent2)}
+ .catline{font-size:12px;color:#666;margin-top:6px}
+ .legend{font-size:12px;color:#666;margin:2px 0 8px}
+ .pill{font-size:12px;color:#2f6f43;background:#eaf5ec;border-radius:6px;padding:1px 7px;margin-right:4px}
+ .badge{font-size:11px;color:#888}
+</style></head><body>
+<header>
+ <h1>그룹 여행 추천 대시보드 v4 final_2 — 임베딩→Nash→LLM + 부분충족 백필 <span style='font-size:12px;color:#888;font-weight:400'>사전 계산 결과 · 전라북도</span></h1>
+ <div>
+  <label>권역 <select id="region"></select></label>
+  <label>대화 <select id="dialogue"></select></label>
+  <span class="badge" id="meta"></span>
+ </div>
+</header>
+<div class="wrap">
+ <div class="left">
+  <div class="card"><h2>그룹 쿼리 / 합의</h2><div class="gq" id="gq"></div></div>
+  <div class="card"><h2>대화 원문</h2><div id="transcript"></div></div>
+  <div class="card"><h2>참가자별 요약</h2><div id="speakers"></div></div>
+ </div>
+ <div class="right">
+  <div class="card"><h2>파이프라인 단계별 Top-K (공통 장소 강조)</h2>
+   <div class="legend">① 임베딩(필터 전) → ② 그룹 카테고리 필터 + Nash → ③ LLM 검수 통과.
+     색이 진할수록 여러 단계에서 공통 등장 · <b>장소에 마우스를 올리면</b> 이유가 표시됩니다.
+     데이터가 없는 단계는 표시하지 않습니다.</div>
+   <div class="cols" id="topk"></div></div>
+  <div class="card"><h2>⑥ 최종 추천 (임베딩→Nash→LLM 통과) <span class="badge" id="finalmeta"></span></h2>
+   <div class="legend">③ 통과(초록) 장소를 먼저 채우고, 부족한 칸은 그룹쿼리를 핵심 조건으로 분해해 조건별 재검수한 <b style="color:#b8860b">부분충족 M/N(주황 ◐)</b> 후보로 채웁니다.</div>
+   <div id="final"></div></div>
+  <div class="card"><h2>왜 이곳을 추천하는가</h2>
+   <div class="legend">최종추천 장소별: 추천 이유 · 참가자별 만족도 · 충족한 선호 · 장소 성격(점수가 있는 카테고리만)</div>
+   <div id="why"></div></div>
+ </div>
+</div>
+
+<script>
+const P={"DATA": {"전라북도": [{"id": "d_lo_04", "type": "full", "group_size": 5, "group_query": "사찰과 박물관이 있고, 주차장에서 가까우며 산책하기 좋은 완만한 숲길이 있는 산으로 추천해줘.", "key_aspects": ["산/숲", "사찰/성지", "트레킹/산책", "박물관", "접근성/교통", "피크닉"], "transcript": [{"sid": "P1", "name": "좌현식", "text": "이번엔 산 쪽으로 갑시다. 나무 그늘에서 좀 쉬고 싶네요."}, {"sid": "P2", "name": "민들레", "text": "저도 산 좋아요. 절 하나 들르면 더 좋고요."}, {"sid": "P3", "name": "사공혁", "text": "산이면 걷는 거죠. 나는 능선까지는 아니어도 숲길은 걷고 싶어요."}, {"sid": "P4", "name": "안보람", "text": "저는 걷다가 자리 펴고 도시락 먹는 게 제일 좋아요."}, {"sid": "P5", "name": "천중기", "text": "산에 있는 옛날 절이나 유물전시관 같은 데도 재밌던데."}, {"sid": "P1", "name": "좌현식", "text": "다들 산으로는 의견이 모이네요."}, {"sid": "P2", "name": "민들레", "text": "절이 산에 있으니 자연스럽게 같이 되겠어요."}, {"sid": "P3", "name": "사공혁", "text": "길이 완만하면 다들 편할 텐데."}, {"sid": "P4", "name": "안보람", "text": "평평한 자리만 하나 있으면 저는 만족이에요."}, {"sid": "P5", "name": "천중기", "text": "절 옆에 유물관 있는 데도 꽤 있어요."}, {"sid": "P1", "name": "좌현식", "text": "나는 그늘만 깊으면 됩니다."}, {"sid": "P2", "name": "민들레", "text": "저는 새벽에 조용한 시간이 좋아요."}, {"sid": "P3", "name": "사공혁", "text": "한 시간 반 정도 코스면 딱이겠네요."}, {"sid": "P4", "name": "안보람", "text": "주차장에서 가까우면 좋겠어요. 짐이 좀 있어서."}, {"sid": "P5", "name": "천중기", "text": "계단 많은 데는 좀 부담스럽고요."}, {"sid": "P1", "name": "좌현식", "text": "산으로 가는 건 정해진 셈이네요."}, {"sid": "P3", "name": "사공혁", "text": "어느 산이냐만 남았죠."}], "speakers": [{"sid": "P1", "name": "좌현식", "query": "나무 그늘이 울창한 산을 추천해줘.", "aspects": ["산/숲"]}, {"sid": "P2", "name": "민들레", "query": "산에 있는 사찰이 포함된 곳으로 추천해줘.", "aspects": ["산/숲", "사찰/성지"]}, {"sid": "P3", "name": "사공혁", "query": "완만한 숲길을 산책할 수 있는 곳으로 추천해줘.", "aspects": ["트레킹/산책", "산/숲"]}, {"sid": "P4", "name": "안보람", "query": "도시락을 먹을 수 있는 평평한 자리와 주차장에서 가까운 곳으로 추천해줘.", "aspects": ["피크닉", "접근성/교통"]}, {"sid": "P5", "name": "천중기", "query": "산에 있는 사찰이나 박물관이 있는 곳으로 추천해줘.", "aspects": ["산/숲", "사찰/성지", "박물관"]}], "methods": {"embed": [{"rank": 1, "spot": "천호성지", "least": 0.918, "avg": 0.969, "nash": -0.157, "why": {"sentence": "이곳은 성물박물관과 성지가 있고 대숲길 같은 편의시설이 마련되어 있어, 박물관과 사찰/성지를 원하시며 산책을 즐기고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.897, "P2": 0.985, "P3": 0.911, "P4": 0.865, "P5": 1.0}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["사찰/성지", "산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["사찰/성지", "산/숲"]}], "top_cats": ["사찰/성지", "산/숲", "트레킹/산책"]}}, {"rank": 2, "spot": "새만금환경생태단지", "least": 0.901, "avg": 0.949, "nash": -0.265, "why": {"sentence": "이곳은 생태습지와 생태놀이터 등이 있는 환경생태단지이며, 요청하신 사찰이나 박물관, 산이 있는 곳은 아닙니다.", "passed": false, "utils": {"P1": 0.896, "P2": 0.739, "P3": 0.961, "P4": 0.976, "P5": 0.746}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "피크닉"]}}, {"rank": 3, "spot": "월명호수", "least": 0.888, "avg": 0.941, "nash": -0.309, "why": {"sentence": "이곳은 천년고찰 은적사와 산책로가 있는 곳이지만, 그룹이 요청한 박물관이 있다는 내용은 소개글에서 확인할 수 없어요.", "passed": false, "utils": {"P1": 0.959, "P2": 0.764, "P3": 1.0, "P4": 0.863, "P5": 0.711}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "해변/바다"]}}, {"rank": 4, "spot": "그날카라반", "least": 0.881, "avg": 0.94, "nash": -0.314, "why": {"sentence": "이곳은 산자락에 위치한 카라반과 펜션 시설에 대한 소개만 있을 뿐, 요청하신 사찰, 박물관, 완만한 숲길에 대한 정보가 없어요.", "passed": false, "utils": {"P1": 0.912, "P2": 0.743, "P3": 0.889, "P4": 0.965, "P5": 0.695}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲"]}, {"name": "안보람", "aspects": ["접근성/교통"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["서비스/친절", "산/숲", "접근성/교통"]}}, {"rank": 5, "spot": "요산공원", "least": 0.88, "avg": 0.939, "nash": -0.317, "why": {"sentence": "요산공원은 옥정호를 끼고 걷는 데크로드 산책로가 있는 곳이지만, 요청하신 사찰이나 박물관에 대한 정보는 소개에 없어요.", "passed": false, "utils": {"P1": 0.891, "P2": 0.735, "P3": 0.96, "P4": 0.938, "P5": 0.69}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "계곡/강"]}}, {"rank": 6, "spot": "용담댐 조각공원", "least": 0.812, "avg": 0.933, "nash": -0.361, "why": {"sentence": "조각 작품과 잔디, 소나무 등이 있는 공원이지만, 요청하신 사찰이나 박물관에 대한 정보는 없어요.", "passed": false, "utils": {"P1": 0.917, "P2": 0.747, "P3": 0.958, "P4": 0.975, "P5": 0.517}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["접근성/교통"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["접근성/교통", "트레킹/산책", "산/숲"]}}, {"rank": 7, "spot": "임실치즈테마파크", "least": 0.898, "avg": 0.933, "nash": -0.351, "why": {"sentence": "임실치즈테마파크는 치즈 체험과 초원을 즐길 수 있는 곳으로, 요청하신 사찰이나 박물관, 산속 숲길에 대한 정보는 포함되어 있지 않아요.", "passed": false, "utils": {"P1": 0.863, "P2": 0.725, "P3": 0.89, "P4": 0.913, "P5": 0.737}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["산/숲", "트레킹/산책", "피크닉"]}}, {"rank": 8, "spot": "고창 무장현 관아와 읍성", "least": 0.888, "avg": 0.932, "nash": -0.353, "why": {"sentence": "이곳은 평지성인 무장읍성으로, 사찰이나 박물관이 있고 완만한 숲길이 있는 산을 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.852, "P2": 0.765, "P3": 0.929, "P4": 0.884, "P5": 0.713}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "서비스/친절"]}}, {"rank": 9, "spot": "완주힐조타운캠핑장", "least": 0.883, "avg": 0.932, "nash": -0.357, "why": {"sentence": "이곳은 캠핑과 다양한 편의 시설을 즐길 수 있는 곳이지만, 요청하신 사찰이나 박물관에 대한 정보는 없어요.", "passed": false, "utils": {"P1": 0.919, "P2": 0.747, "P3": 0.862, "P4": 0.905, "P5": 0.698}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["산/숲", "트레킹/산책", "피크닉"]}}, {"rank": 10, "spot": "상하농원 파머스글램핑", "least": 0.881, "avg": 0.928, "nash": -0.375, "why": {"sentence": "이곳은 글램핑 시설과 부대시설 위주의 장소이며, 요청하신 사찰이나 박물관에 대한 정보는 포함되어 있지 않아요.", "passed": false, "utils": {"P1": 0.906, "P2": 0.742, "P3": 0.913, "P4": 0.86, "P5": 0.695}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["산/숲", "트레킹/산책", "해변/바다"]}}], "nash": [{"rank": 1, "spot": "천호성지", "least": 0.865, "avg": 0.932, "nash": -0.362, "why": {"sentence": "이곳은 성물박물관과 성지가 있고 대숲길 같은 편의시설이 마련되어 있어, 박물관과 사찰/성지를 원하시며 산책을 즐기고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.897, "P2": 0.985, "P3": 0.911, "P4": 0.865, "P5": 1.0}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["사찰/성지", "산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["사찰/성지", "산/숲"]}], "top_cats": ["사찰/성지", "산/숲", "트레킹/산책"]}}, {"rank": 2, "spot": "새만금환경생태단지", "least": 0.739, "avg": 0.864, "nash": -0.769, "why": {"sentence": "이곳은 생태습지와 생태놀이터 등이 있는 환경생태단지이며, 요청하신 사찰이나 박물관, 산이 있는 곳은 아닙니다.", "passed": false, "utils": {"P1": 0.896, "P2": 0.739, "P3": 0.961, "P4": 0.976, "P5": 0.746}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "피크닉"]}}, {"rank": 3, "spot": "월명호수", "least": 0.711, "avg": 0.859, "nash": -0.799, "why": {"sentence": "이곳은 천년고찰 은적사와 산책로가 있는 곳이지만, 그룹이 요청한 박물관이 있다는 내용은 소개글에서 확인할 수 없어요.", "passed": false, "utils": {"P1": 0.959, "P2": 0.764, "P3": 1.0, "P4": 0.863, "P5": 0.711}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "해변/바다"]}}, {"rank": 4, "spot": "요산공원", "least": 0.69, "avg": 0.843, "nash": -0.899, "why": {"sentence": "요산공원은 옥정호를 끼고 걷는 데크로드 산책로가 있는 곳이지만, 요청하신 사찰이나 박물관에 대한 정보는 소개에 없어요.", "passed": false, "utils": {"P1": 0.891, "P2": 0.735, "P3": 0.96, "P4": 0.938, "P5": 0.69}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "계곡/강"]}}, {"rank": 5, "spot": "그날카라반", "least": 0.695, "avg": 0.841, "nash": -0.906, "why": {"sentence": "이곳은 산자락에 위치한 카라반과 펜션 시설에 대한 소개만 있을 뿐, 요청하신 사찰, 박물관, 완만한 숲길에 대한 정보가 없어요.", "passed": false, "utils": {"P1": 0.912, "P2": 0.743, "P3": 0.889, "P4": 0.965, "P5": 0.695}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲"]}, {"name": "안보람", "aspects": ["접근성/교통"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["서비스/친절", "산/숲", "접근성/교통"]}}, {"rank": 6, "spot": "고창 무장현 관아와 읍성", "least": 0.713, "avg": 0.829, "nash": -0.962, "why": {"sentence": "이곳은 평지성인 무장읍성으로, 사찰이나 박물관이 있고 완만한 숲길이 있는 산을 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.852, "P2": 0.765, "P3": 0.929, "P4": 0.884, "P5": 0.713}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "서비스/친절"]}}, {"rank": 7, "spot": "임실치즈테마파크", "least": 0.725, "avg": 0.826, "nash": -0.982, "why": {"sentence": "임실치즈테마파크는 치즈 체험과 초원을 즐길 수 있는 곳으로, 요청하신 사찰이나 박물관, 산속 숲길에 대한 정보는 포함되어 있지 않아요.", "passed": false, "utils": {"P1": 0.863, "P2": 0.725, "P3": 0.89, "P4": 0.913, "P5": 0.737}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["산/숲", "트레킹/산책", "피크닉"]}}, {"rank": 8, "spot": "완주힐조타운캠핑장", "least": 0.698, "avg": 0.826, "nash": -0.983, "why": {"sentence": "이곳은 캠핑과 다양한 편의 시설을 즐길 수 있는 곳이지만, 요청하신 사찰이나 박물관에 대한 정보는 없어요.", "passed": false, "utils": {"P1": 0.919, "P2": 0.747, "P3": 0.862, "P4": 0.905, "P5": 0.698}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["산/숲", "트레킹/산책", "피크닉"]}}, {"rank": 9, "spot": "상하농원 파머스글램핑", "least": 0.695, "avg": 0.823, "nash": -1.002, "why": {"sentence": "이곳은 글램핑 시설과 부대시설 위주의 장소이며, 요청하신 사찰이나 박물관에 대한 정보는 포함되어 있지 않아요.", "passed": false, "utils": {"P1": 0.906, "P2": 0.742, "P3": 0.913, "P4": 0.86, "P5": 0.695}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["산/숲", "트레킹/산책", "해변/바다"]}}, {"rank": 10, "spot": "매창공원", "least": 0.694, "avg": 0.813, "nash": -1.062, "why": {"sentence": "매창공원은 산책로와 전시관이 있는 문화공원이지만, 요청하신 사찰이 포함되어 있지 않아요.", "passed": false, "utils": {"P1": 0.804, "P2": 0.694, "P3": 0.91, "P4": 0.906, "P5": 0.751}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "서비스/친절", "산/숲"]}}, {"rank": 11, "spot": "용담댐 조각공원", "least": 0.517, "avg": 0.823, "nash": -1.106, "why": {"sentence": "조각 작품과 잔디, 소나무 등이 있는 공원이지만, 요청하신 사찰이나 박물관에 대한 정보는 없어요.", "passed": false}}, {"rank": 12, "spot": "구송정 유원지", "least": 0.709, "avg": 0.804, "nash": -1.112, "why": {"sentence": "이곳은 호수와 소나무가 있는 평지 중심의 유원지로, 요청하신 사찰이나 박물관에 대한 정보가 없습니다.", "passed": false}}, {"rank": 13, "spot": "용담섬바위오토캠핑장", "least": 0.7, "avg": 0.794, "nash": -1.188, "why": {"sentence": "이곳은 숲속 산책로와 나무 그늘이 있는 캠핑장이지만, 요청하신 사찰이나 박물관에 대한 정보는 없어요.", "passed": false}}, {"rank": 14, "spot": "광한루", "least": 0.449, "avg": 0.812, "nash": -1.22, "why": {"sentence": "광한루는 누각과 경치를 즐기는 곳으로, 요청하신 사찰이나 박물관, 완만한 숲길에 대한 정보가 소개에 없습니다.", "passed": false}}, {"rank": 15, "spot": "방화동 가족휴가촌 오토캠핑장", "least": 0.667, "avg": 0.788, "nash": -1.225, "why": {"sentence": "이곳은 울창한 숲속 산책로와 계곡을 갖추고 있지만, 요청하신 사찰이나 박물관에 대한 정보는 없어요.", "passed": false}}, {"rank": 16, "spot": "섬진강향가오토캠핑장", "least": 0.667, "avg": 0.782, "nash": -1.256, "why": {"sentence": "이곳은 캠핑장과 산책로 위주의 장소로, 그룹이 요청한 사찰과 박물관이 장소 내에 포함되어 있다는 근거를 찾을 수 없어요.", "passed": false}}, {"rank": 17, "spot": "영스테이", "least": 0.688, "avg": 0.783, "nash": -1.257, "why": {"sentence": "영스테이는 독채펜션으로 잔디마당과 자쿠지 등은 갖추고 있지만, 요청하신 사찰, 박물관, 완만한 숲길이 있는 산에 대한 정보는 없습니다.", "passed": false}}, {"rank": 18, "spot": "변산반도국립공원", "least": 0.697, "avg": 0.779, "nash": -1.273, "why": {"sentence": "이곳은 유서 깊은 고찰과 역사 유적지가 있는 곳이지만, 요청하신 박물관이나 주차장에서 가까운 완만한 숲길에 대한 정보는 없어요.", "passed": false}}, {"rank": 19, "spot": "무주풀빌라&카라반", "least": 0.678, "avg": 0.772, "nash": -1.315, "why": {"sentence": "장소 소개에 사찰, 박물관, 완만한 숲길에 대한 정보가 포함되어 있지 않아 요청하신 조건에 맞는지 확인할 수 없어요.", "passed": false}}, {"rank": 20, "spot": "사선대관광지&조각공원", "least": 0.634, "avg": 0.779, "nash": -1.322, "why": {"sentence": "이곳은 소나무와 벚나무가 울창하고 잘 가꾸어진 산책로가 있지만, 요청하신 사찰이나 박물관은 소개 내용에 포함되어 있지 않아요.", "passed": false}}, {"rank": 21, "spot": "혼불문학관", "least": 0.478, "avg": 0.768, "nash": -1.436, "why": {"sentence": "이곳은 박물관 시설이 갖춰진 문학관이라 박물관을 원하시는 분들께 잘 맞아요.", "passed": true}}, {"rank": 22, "spot": "덕동자동차야영장", "least": 0.667, "avg": 0.75, "nash": -1.471, "why": {"sentence": "이곳은 계곡을 끼고 있는 야영장일 뿐, 요청하신 사찰이나 박물관, 완만한 숲길에 대한 정보가 없어요.", "passed": false}}, {"rank": 23, "spot": "달궁힐링야영장", "least": 0.651, "avg": 0.743, "nash": -1.52, "why": {"sentence": "이곳은 사찰이나 박물관에 대한 정보가 없고 주차장에서 야영장까지 짐을 직접 날라야 하는 곳이라 요청하신 조건과 맞지 않아요.", "passed": false}}, {"rank": 24, "spot": "라제통문", "least": 0.651, "avg": 0.735, "nash": -1.566, "why": {"sentence": "라제통문은 석굴문이자 지질 명소일 뿐, 요청하신 사찰이나 박물관, 완만한 숲길에 대한 정보가 소개에 없어요.", "passed": false}}, {"rank": 25, "spot": "강천산휴양농원", "least": 0.647, "avg": 0.735, "nash": -1.587, "why": {"sentence": "강천산휴양농원은 허브전문 관광농원으로 잔디마당과 숙박시설 등을 갖추고 있으나, 요청하신 사찰이나 박물관에 대한 정보는 소개에 없습니다.", "passed": false}}, {"rank": 26, "spot": "장수 한누리전당", "least": 0.638, "avg": 0.732, "nash": -1.593, "why": {"sentence": "이곳은 문화체육시설로 대강당, 수영장, 공연장 등이 있는 곳이라 사찰이나 박물관, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 27, "spot": "대성 정담한옥", "least": 0.645, "avg": 0.728, "nash": -1.61, "why": {"sentence": "이곳은 독채 펜션으로, 요청하신 사찰과 박물관이 있는 산이나 완만한 숲길에 대한 정보가 소개에 포함되어 있지 않아요.", "passed": false}}, {"rank": 28, "spot": "정읍어린이교통공원", "least": 0.616, "avg": 0.731, "nash": -1.621, "why": {"sentence": "이곳은 교통안전 체험을 위한 시설이라 사찰이나 박물관, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 29, "spot": "새만금 비응공원", "least": 0.622, "avg": 0.73, "nash": -1.621, "why": {"sentence": "새만금 비응공원은 산이나 사찰, 박물관이 아닌 수경 시설과 무궁화동산 등이 있는 공원이라 요청하신 조건에 맞지 않아요.", "passed": false}}, {"rank": 30, "spot": "팔복예술공장", "least": 0.401, "avg": 0.75, "nash": -1.637, "why": {"sentence": "이곳은 문화 예술 플랫폼이자 복합문화공간이라, 사찰과 산, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 31, "spot": "지리산천왕봉야영장", "least": 0.646, "avg": 0.723, "nash": -1.656, "why": {"sentence": "이곳은 캠핑장과 계곡 위주의 장소라 사찰이나 박물관, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 32, "spot": "벽골제 농경문화 박물관", "least": 0.613, "avg": 0.725, "nash": -1.671, "why": {"sentence": "벽골제 농경문화 박물관은 박물관이 있는 곳이지만, 요청하신 사찰이나 산책하기 좋은 완만한 숲길에 대한 정보는 없어요.", "passed": false}}, {"rank": 33, "spot": "전주 남고산성", "least": 0.457, "avg": 0.733, "nash": -1.676, "why": {"sentence": "남고산성은 여러 봉우리를 둘러싼 산성이라는 설명만 있을 뿐, 사찰이나 박물관, 완만한 숲길에 대한 정보가 없어요.", "passed": false}}, {"rank": 34, "spot": "전주드림랜드", "least": 0.617, "avg": 0.717, "nash": -1.712, "why": {"sentence": "이곳은 놀이동산이라 사찰과 박물관, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 35, "spot": "양떼목장임실치즈마을", "least": 0.635, "avg": 0.714, "nash": -1.713, "why": {"sentence": "이곳은 치즈 만들기 체험과 숲 체험이 가능한 곳이지만, 요청하신 사찰이나 박물관은 소개 내용에 포함되어 있지 않아요.", "passed": false}}, {"rank": 36, "spot": "부안댐 물문화관", "least": 0.619, "avg": 0.712, "nash": -1.734, "why": {"sentence": "이곳은 박물관(전시실)은 갖추고 있으나, 요청하신 사찰이나 완만한 숲길에 대한 정보가 없습니다.", "passed": false}}, {"rank": 37, "spot": "대한민국 술테마박물관", "least": 0.412, "avg": 0.72, "nash": -1.815, "why": {"sentence": "박물관은 있지만 사찰이나 완만한 숲길에 대한 정보가 없어 요청하신 조건에 맞지 않아요.", "passed": false}}, {"rank": 38, "spot": "내장산 워터파크", "least": 0.595, "avg": 0.706, "nash": -1.817, "why": {"sentence": "이곳은 음악분수 쇼를 즐길 수 있는 워터파크라 사찰, 박물관, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 39, "spot": "순창 거북장수마을 [농촌전통테마]", "least": 0.618, "avg": 0.699, "nash": -1.837, "why": {"sentence": "이곳은 농촌 전통 테마의 마을로, 요청하신 사찰이나 박물관, 완만한 숲길에 대한 정보가 소개에 포함되어 있지 않아요.", "passed": false}}, {"rank": 40, "spot": "순창고추장익는마을", "least": 0.618, "avg": 0.694, "nash": -1.863, "why": {"sentence": "이곳은 고추장 체험과 식사가 가능한 마을이지만, 요청하신 사찰이나 박물관, 완만한 숲길에 대한 정보는 없어요.", "passed": false}}, {"rank": 41, "spot": "복합문화지구 누에", "least": 0.575, "avg": 0.7, "nash": -1.867, "why": {"sentence": "이곳은 문화예술 교육과 전시 등을 운영하는 복합문화지구로, 요청하신 사찰이나 완만한 숲길이 있는 산과는 거리가 멀어요.", "passed": false}}, {"rank": 42, "spot": "전북도립미술관", "least": 0.403, "avg": 0.711, "nash": -1.872, "why": {"sentence": "미술관 뒤로 모악산이 펼쳐져 있어 자연을 즐기기 좋지만, 요청하신 사찰이나 완만한 숲길에 대한 정보는 소개에 없어요.", "passed": false}}, {"rank": 43, "spot": "깊은골캠핑장", "least": 0.609, "avg": 0.692, "nash": -1.901, "why": {"sentence": "사찰이나 박물관, 완만한 숲길에 대한 정보가 없어 그룹의 요청을 충족하기 어려워요.", "passed": false}}, {"rank": 44, "spot": "덕유대오토캠핑장", "least": 0.273, "avg": 0.746, "nash": -1.902, "why": {"sentence": "덕유대오토캠핑장은 야영장과 계곡 자연관찰로에 대한 정보만 있을 뿐, 요청하신 사찰이나 박물관에 대한 정보가 없어요.", "passed": false}}, {"rank": 45, "spot": "아쿠아틱파크 아마존", "least": 0.606, "avg": 0.687, "nash": -1.927, "why": {"sentence": "이곳은 물을 이용한 다양한 레포츠 시설이 모여 있는 복합관광레저시설이라, 사찰과 박물관이 있는 산을 원하신 분들께는 맞지 않아요.", "passed": false}}, {"rank": 46, "spot": "뜬봉샘생태공원", "least": 0.336, "avg": 0.713, "nash": -1.96, "why": {"sentence": "이곳은 금강의 발원지인 뜬봉샘과 관련된 설화가 있는 곳이지만, 요청하신 사찰이나 박물관, 완만한 숲길, 주차장 접근성에 대한 정보는 소개에 나와 있지 않아요.", "passed": false}}, {"rank": 47, "spot": "익산 액션하우스", "least": 0.615, "avg": 0.678, "nash": -1.985, "why": {"sentence": "이곳은 이색동물들과 교감하며 산책할 수 있는 동물농장이라, 사찰이나 박물관이 있는 산을 원하신 분들께는 맞지 않아요.", "passed": false}}, {"rank": 48, "spot": "산속등대 복합문화공간", "least": 0.494, "avg": 0.679, "nash": -2.044, "why": {"sentence": "이곳은 제지공장을 개조한 복합문화공간으로 미술관과 체험관 등은 있지만, 요청하신 사찰이나 완만한 숲길에 대한 정보는 없습니다.", "passed": false}}, {"rank": 49, "spot": "보다더캠핑", "least": 0.576, "avg": 0.664, "nash": -2.126, "why": {"sentence": "캠핑장 시설과 선운사 계곡 근처라는 정보는 있지만, 요청하신 사찰, 박물관, 완만한 숲길에 대한 설명은 없습니다.", "passed": false}}, {"rank": 50, "spot": "정읍시립미술관", "least": 0.354, "avg": 0.682, "nash": -2.133, "why": {"sentence": "정읍시립미술관은 미술관 시설에 대한 설명만 있을 뿐, 요청하신 사찰이나 완만한 숲길이 있는 산에 대한 정보가 없어요.", "passed": false}}], "llm": [{"rank": 1, "spot": "천호성지", "least": 0.865, "avg": 0.932, "nash": -0.362, "why": {"sentence": "이곳은 성물박물관과 성지가 있고 대숲길 같은 편의시설이 마련되어 있어, 박물관과 사찰/성지를 원하시며 산책을 즐기고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.897, "P2": 0.985, "P3": 0.911, "P4": 0.865, "P5": 1.0}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["사찰/성지", "산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["사찰/성지", "산/숲"]}], "top_cats": ["사찰/성지", "산/숲", "트레킹/산책"]}}, {"rank": 2, "spot": "혼불문학관", "least": 0.478, "avg": 0.768, "nash": -1.436, "why": {"sentence": "이곳은 박물관 시설이 갖춰진 문학관이라 박물관을 원하시는 분들께 잘 맞아요.", "passed": true}}, {"rank": 3, "spot": "요산공원", "least": 0.69, "avg": 0.843, "nash": -0.899, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 확인불가: 사찰과 박물관, 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접"]}, "utils": {"P1": 0.891, "P2": 0.735, "P3": 0.96, "P4": 0.938, "P5": 0.69}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "계곡/강"]}}, {"rank": 4, "spot": "방화동 가족휴가촌 오토캠핑장", "least": 0.667, "avg": 0.788, "nash": -1.225, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 확인불가: 사찰과 박물관, 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접"]}, "utils": {"P1": 0.832, "P2": 0.706, "P3": 0.847, "P4": 0.886, "P5": 0.667}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["서비스/친절", "산/숲", "트레킹/산책"]}}, {"rank": 5, "spot": "사선대관광지&조각공원", "least": 0.634, "avg": 0.779, "nash": -1.322, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 확인불가: 사찰과 박물관, 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접"]}, "utils": {"P1": 0.735, "P2": 0.663, "P3": 0.862, "P4": 1.0, "P5": 0.634}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["접근성/교통"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "접근성/교통", "산/숲"]}}, {"rank": 6, "spot": "덕동자동차야영장", "least": 0.667, "avg": 0.75, "nash": -1.471, "why": {"sentence": "조건 1/3 충족 · 충족: 주차장 인접 · 확인불가: 사찰과 박물관, 완만한 숲길 산책로", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["주차장 인접"], "unmet": [], "unknown": ["사찰과 박물관", "완만한 숲길 산책로"]}, "utils": {"P1": 0.835, "P2": 0.705, "P3": 0.674, "P4": 0.867, "P5": 0.667}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["계곡/강", "산/숲", "피크닉"]}}, {"rank": 7, "spot": "새만금 비응공원", "least": 0.622, "avg": 0.73, "nash": -1.621, "why": {"sentence": "조건 1/3 충족 · 충족: 주차장 인접 · 확인불가: 사찰과 박물관, 완만한 숲길 산책로", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["주차장 인접"], "unmet": [], "unknown": ["사찰과 박물관", "완만한 숲길 산책로"]}, "utils": {"P1": 0.689, "P2": 0.648, "P3": 0.785, "P4": 0.908, "P5": 0.622}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["서비스/친절", "트레킹/산책", "산/숲"]}}, {"rank": 8, "spot": "매창공원", "least": 0.694, "avg": 0.813, "nash": -1.062, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 미충족: 사찰과 박물관 · 확인불가: 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": ["사찰과 박물관"], "unknown": ["주차장 인접"]}, "utils": {"P1": 0.804, "P2": 0.694, "P3": 0.91, "P4": 0.906, "P5": 0.751}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "서비스/친절", "산/숲"]}}, {"rank": 9, "spot": "새만금환경생태단지", "least": 0.739, "avg": 0.864, "nash": -0.769, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {"P1": 0.896, "P2": 0.739, "P3": 0.961, "P4": 0.976, "P5": 0.746}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "안보람", "aspects": ["피크닉"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "피크닉"]}}, {"rank": 10, "spot": "월명호수", "least": 0.711, "avg": 0.859, "nash": -0.799, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {"P1": 0.959, "P2": 0.764, "P3": 1.0, "P4": 0.863, "P5": 0.711}, "matched": [{"name": "좌현식", "aspects": ["산/숲"]}, {"name": "민들레", "aspects": ["산/숲"]}, {"name": "사공혁", "aspects": ["산/숲", "트레킹/산책"]}, {"name": "천중기", "aspects": ["산/숲"]}], "top_cats": ["트레킹/산책", "산/숲", "해변/바다"]}}]}}]}, "METHODS": ["embed", "nash", "llm"], "METHOD_LABELS": {"embed": "① 임베딩", "nash": "② 임베딩→Nash", "llm": "③ 임베딩→Nash→LLM"}, "FINAL_SIZE": 10, "DISPLAY_K": 10};
+const {DATA,METHODS,METHOD_LABELS:ML,FINAL_SIZE,DISPLAY_K}=P;
+const $=id=>document.getElementById(id);
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function opt(sel,vals,labels){sel.innerHTML=vals.map(v=>`<option value="${v}">${labels?labels[v]||v:v}</option>`).join('');}
+const heat=(n,mx)=>{if(!n)return'#fff';const t=Math.min(1,n/mx);const r=Math.round(255-(255-76)*t),g=Math.round(255-(255-114)*t),b=Math.round(255-(255-176)*t);return`rgb(${r},${g},${b})`;};
+
+const regions=Object.keys(DATA);
+opt($('region'),regions);
+
+function curDia(){return DATA[$('region').value].find(d=>d.id===$('dialogue').value);}
+function fillDialogues(){const ds=DATA[$('region').value];opt($('dialogue'),ds.map(d=>d.id));render();}
+
+function tipHtml(x,showPass){
+ const w=x.why||{};
+ if(w.partial) return `<b style="color:#ffd27f">◐ 부분충족 ${w.partial.m}/${w.partial.n}</b><br>${esc(w.sentence)||''}`;
+ if(showPass&&w.passed===true) return `<b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc(w.sentence)||'추천 이유 정보 없음'}`;
+ if(showPass&&w.passed===false) return `<b style="color:#ff9a9a">✘ LLM 검수 탈락</b><br>${esc(w.sentence)||'근거 부족/부적합'}`;
+ return esc(w.sentence)||'추천 이유 정보 없음';
+}
+
+function render(){
+ const d=curDia();if(!d)return;
+ $('meta').textContent=`${d.id} · ${d.type||''} · ${d.group_size}명`;
+ $('gq').innerHTML=`<b>${esc(d.group_query||'')}</b><br>`+
+   ((d.key_aspects&&d.key_aspects.length)?`<div style="margin-top:6px">핵심: `+d.key_aspects.map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`:'');
+ $('transcript').innerHTML=(d.transcript||[]).map(t=>
+   `<div class="turn"><div class="who">${esc(t.name||t.sid)}</div><div class="utt">${esc(t.text)}</div></div>`).join('')||'<span class="badge">원문 없음</span>';
+ $('speakers').innerHTML=(d.speakers||[]).map(s=>
+   `<div class="spk"><div class="nm">${esc(s.name)} <span class="badge">${esc(s.sid)}</span></div>`+
+   `<div class="q">"${esc(s.query)}"</div>`+
+   (s.aspects||[]).map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`).join('');
+
+ // 데이터가 있는 단계만 컬럼 표시
+ const present=METHODS.filter(m=>(d.methods[m]||[]).length);
+ const cnt={};
+ present.forEach(m=>{(d.methods[m]||[]).slice(0,DISPLAY_K).forEach(x=>{cnt[x.spot]=(cnt[x.spot]||0)+1;});});
+ const mxc=Math.max(1,...Object.values(cnt));
+ $('topk').innerHTML=present.map(m=>{
+   const showPass=(m!=='embed');
+   const spots=(d.methods[m]||[]).slice(0,DISPLAY_K);
+   return `<div class="col"><h3>${ML[m]}</h3>`+
+     spots.map(x=>`<div class="spot" style="background:${heat(cnt[x.spot],mxc)};${cnt[x.spot]>=3?'color:#fff':''}">`+
+       `<span class="rk">${x.rank}</span><span class="nm">${esc(x.spot)}</span><div class="tip">${tipHtml(x,showPass)}</div></div>`).join('')+`</div>`;
+ }).join('')||'<span class="badge">데이터 없음</span>';
+
+ renderFinal();
+ renderWhy();
+}
+
+function renderFinal(){
+ const d=curDia();if(!d)return;
+ const rows=(d.methods['llm']||[]);
+ const pick=rows.slice(0,FINAL_SIZE);
+ let h='<div class="finalgrid">';
+ for(let i=0;i<FINAL_SIZE;i++){
+   const x=pick[i];
+   if(x){
+     const pt=(x.why||{}).partial;
+     if(pt){
+       h+=`<div class="slot partial"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)} <span class="badge" style="color:#b8860b">◐ ${pt.m}/${pt.n}</span></span>`+
+          `<div class="tip"><b style="color:#ffd27f">◐ 부분충족 ${pt.m}/${pt.n}</b><br>${esc((x.why||{}).sentence)||''}</div></div>`;
+     }else{
+       h+=`<div class="slot pass"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)}</span>`+
+          `<div class="tip"><b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc((x.why||{}).sentence)||'추천 이유 정보 없음'}</div></div>`;
+     }
+   }else{
+     h+=`<div class="slot empty"><span class="rk">${i+1}</span><span class="nm">—</span></div>`;
+   }
+ }
+ h+='</div>';
+ $('final').innerHTML=h;
+ const npart=rows.filter(r=>(r.why||{}).partial).length;
+ $('finalmeta').textContent=`통과 ${rows.length-npart}개 + 부분충족 ${npart}개 / ${FINAL_SIZE}칸`;
+}
+
+function renderWhy(){
+ const d=curDia();if(!d)return;
+ const spots=(d.methods['llm']||[]).slice(0,FINAL_SIZE);
+ $('why').innerHTML=spots.map((x,ri)=>{
+   const w=x.why||{};const us=Object.entries(w.utils||{});
+   const ubars=us.map(([sid,v])=>{const nm=(d.speakers.find(s=>s.sid===sid)||{}).name||sid;
+     return `<div class="ub"><div class="lab"><span>${esc(nm)}</span><span>${(+v).toFixed(2)}</span></div>`+
+       `<div class="track"><div class="fill" style="width:${Math.round(v*100)}%"></div></div></div>`;}).join('');
+   const matched=(w.matched||[]).map(mm=>`<span class="pill">${esc(mm.name)}: ${(mm.aspects||[]).join('·')}</span>`).join('')||'<span class="badge">직접 매칭 없음</span>';
+   const cats=(w.top_cats||[]).filter(c=>c);
+   return `<div class="whyrow"><div class="h"><span>#${ri+1} ${esc(x.spot)} ${w.partial?`<span class="badge" style="color:#b8860b">◐ 부분충족 ${w.partial.m}/${w.partial.n}</span>`:`<span class="badge" style="color:#1e8449">LLM 통과</span>`}</span>`+
+     `<span class="badge">최소만족 ${x.least} · 평균 ${x.avg}</span></div>`+
+     `<div class="sent">${esc(w.sentence)||'<span class="badge">이유 미생성</span>'}</div>`+
+     `<div>${matched}</div>`+
+     (cats.length?`<div class="catline">장소 성격: ${cats.map(c=>`<b>${esc(c)}</b>`).join(', ')}</div>`:'')+
+     `<div class="uwrap">${ubars}</div></div>`;
+ }).join('')||'<span class="badge">통과 장소 없음</span>';
+}
+
+$('region').onchange=fillDialogues;
+$('dialogue').onchange=render;
+fillDialogues();
+</script>
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>그룹 여행 추천 대시보드 v4 final_2 (부분충족 백필)</title>
+<style>
+ :root{--accent:#4C72B0;--accent2:#55A868;}
+ *{box-sizing:border-box}
+ body{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;margin:0;color:#1a1a1a;background:#f4f5f7}
+ header{background:#fff;border-bottom:1px solid #e3e3e3;padding:14px 22px;position:sticky;top:0;z-index:5}
+ header h1{font-size:18px;margin:0 0 8px}
+ select{font-size:14px;padding:5px 9px;margin-right:12px;border:1px solid #ccc;border-radius:6px}
+ .wrap{display:flex;gap:18px;padding:18px 22px;align-items:flex-start}
+ .left{flex:0 0 420px;max-width:420px;display:flex;flex-direction:column;gap:14px}
+ .right{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+ .card{background:#fff;border:1px solid #e3e3e3;border-radius:10px;padding:14px}
+ .card h2{font-size:14px;margin:0 0 10px;border-left:4px solid var(--accent);padding-left:8px}
+ .gq{background:#eef3fb;border-radius:8px;padding:10px;font-size:14px;line-height:1.5}
+ .tag{display:inline-block;background:#e8eefc;color:#33518a;border-radius:20px;padding:2px 9px;font-size:12px;margin:2px 3px 2px 0}
+ .turn{display:flex;gap:8px;margin:7px 0;font-size:13px;line-height:1.45}
+ .who{flex:0 0 64px;font-weight:600;color:#33518a;text-align:right}
+ .utt{background:#f6f7f9;border-radius:8px;padding:6px 10px;flex:1}
+ .spk{border:1px solid #eee;border-radius:8px;padding:8px 10px;margin:7px 0;background:#fcfcfd}
+ .spk .nm{font-weight:600;font-size:13px}
+ .spk .q{font-size:13px;color:#444;margin:3px 0}
+ .cols{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+ .col{min-width:200px;flex:1;background:#fafbfc;border:1px solid #e7e7e7;border-radius:8px;padding:8px}
+ .col h3{font-size:12px;margin:0 0 8px;text-align:center;color:#333}
+ .spot{position:relative;padding:4px 7px;margin:3px 0;border-radius:6px;font-size:12px;display:flex;justify-content:space-between;gap:6px;background:#fff;border:1px solid #eee;cursor:default}
+ .spot .rk{color:#aaa;font-variant-numeric:tabular-nums;flex:0 0 18px}
+ .spot .nm{flex:1}
+ .spot .tip,.slot .tip{visibility:hidden;opacity:0;position:absolute;z-index:30;left:50%;top:125%;transform:translateX(-50%);
+   width:240px;background:#222;color:#fff;font-size:12px;line-height:1.5;padding:8px 10px;border-radius:8px;font-weight:400;
+   box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .12s;white-space:normal;text-align:left}
+ .spot .tip::after,.slot .tip::after{content:"";position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:#222}
+ .spot:hover .tip,.slot:hover .tip{visibility:visible;opacity:1}
+ .finalgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+ .slot{position:relative;border:1px solid #e7e7e7;border-radius:8px;padding:7px 10px;font-size:13px;display:flex;gap:8px;background:#fff;cursor:default}
+ .slot.pass{border-color:#dfe6f2}
+ .slot.empty{color:#c0c0c0;background:#fafafa;border-style:dashed}
+ .slot.partial{border-color:#f0ad4e;background:#fff8ec}
+ .slot .rk{color:#999;flex:0 0 20px;font-weight:600}
+ .slot .nm{flex:1}
+ .whyrow{border:1px solid #ececec;border-radius:8px;padding:10px;margin:8px 0;background:#fff}
+ .whyrow .h{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+ .whyrow .sent{font-size:13px;color:#444;margin:6px 0}
+ .uwrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+ .ub{font-size:12px;min-width:108px}
+ .ub .lab{display:flex;justify-content:space-between;color:#555}
+ .track{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:2px}
+ .fill{height:8px;background:var(--accent2)}
+ .catline{font-size:12px;color:#666;margin-top:6px}
+ .legend{font-size:12px;color:#666;margin:2px 0 8px}
+ .pill{font-size:12px;color:#2f6f43;background:#eaf5ec;border-radius:6px;padding:1px 7px;margin-right:4px}
+ .badge{font-size:11px;color:#888}
+</style></head><body>
+<header>
+ <h1>그룹 여행 추천 대시보드 v4 final_2 — 임베딩→Nash→LLM + 부분충족 백필 <span style='font-size:12px;color:#888;font-weight:400'>사전 계산 결과 · 충청북도</span></h1>
+ <div>
+  <label>권역 <select id="region"></select></label>
+  <label>대화 <select id="dialogue"></select></label>
+  <span class="badge" id="meta"></span>
+ </div>
+</header>
+<div class="wrap">
+ <div class="left">
+  <div class="card"><h2>그룹 쿼리 / 합의</h2><div class="gq" id="gq"></div></div>
+  <div class="card"><h2>대화 원문</h2><div id="transcript"></div></div>
+  <div class="card"><h2>참가자별 요약</h2><div id="speakers"></div></div>
+ </div>
+ <div class="right">
+  <div class="card"><h2>파이프라인 단계별 Top-K (공통 장소 강조)</h2>
+   <div class="legend">① 임베딩(필터 전) → ② 그룹 카테고리 필터 + Nash → ③ LLM 검수 통과.
+     색이 진할수록 여러 단계에서 공통 등장 · <b>장소에 마우스를 올리면</b> 이유가 표시됩니다.
+     데이터가 없는 단계는 표시하지 않습니다.</div>
+   <div class="cols" id="topk"></div></div>
+  <div class="card"><h2>⑥ 최종 추천 (임베딩→Nash→LLM 통과) <span class="badge" id="finalmeta"></span></h2>
+   <div class="legend">③ 통과(초록) 장소를 먼저 채우고, 부족한 칸은 그룹쿼리를 핵심 조건으로 분해해 조건별 재검수한 <b style="color:#b8860b">부분충족 M/N(주황 ◐)</b> 후보로 채웁니다.</div>
+   <div id="final"></div></div>
+  <div class="card"><h2>왜 이곳을 추천하는가</h2>
+   <div class="legend">최종추천 장소별: 추천 이유 · 참가자별 만족도 · 충족한 선호 · 장소 성격(점수가 있는 카테고리만)</div>
+   <div id="why"></div></div>
+ </div>
+</div>
+
+<script>
+const P={"DATA": {"충청북도": [{"id": "d_lo_02", "type": "full", "group_size": 5, "group_query": "바다 근처로 여행지 추천해줘.", "key_aspects": ["해변/바다"], "transcript": [{"sid": "P1", "name": "봉준석", "text": "이번엔 바다 쪽으로 갑시다. 오랜만에 짠내 좀 맡고 싶네요."}, {"sid": "P2", "name": "여경원", "text": "좋죠. 저는 바닷가에 있는 옛날 마을 같은 데도 보고 싶고요."}, {"sid": "P3", "name": "탁상미", "text": "나도 바다 찬성. 근데 나는 물에 들어가는 것보다 근처 박물관 같은 데 들르는 게 좋아."}, {"sid": "P4", "name": "은형기", "text": "나는 이왕 물에 왔으면 제트보트 정도는 타봐야지."}, {"sid": "P5", "name": "추민철", "text": "저는 하구 쪽 강물이랑 바다 만나는 데가 좋더라고요. 그런 데 있으면 좋겠어요."}, {"sid": "P1", "name": "봉준석", "text": "다 바다 근처에서 되는 것들이네요."}, {"sid": "P2", "name": "여경원", "text": "어촌 마을에 옛날 건물 남아 있는 데가 꽤 있어요."}, {"sid": "P3", "name": "탁상미", "text": "그런 데는 대개 작은 전시관도 같이 있더라."}, {"sid": "P4", "name": "은형기", "text": "나만 물에 들어가면 되겠네. 뭐 상관없어."}, {"sid": "P5", "name": "추민철", "text": "강 하구에 데크 잘 돼 있는 데가 있으면 좋겠어요."}, {"sid": "P1", "name": "봉준석", "text": "나는 회 먹을 데만 근처에 있으면 됩니다."}, {"sid": "P2", "name": "여경원", "text": "저는 골목이 남아 있는 데가 좋아요."}, {"sid": "P3", "name": "탁상미", "text": "나는 실내가 하나는 있어야 해. 더울 때 피하게."}, {"sid": "P4", "name": "은형기", "text": "보트 타는 데는 안전요원 있는지 봐야죠."}, {"sid": "P5", "name": "추민철", "text": "화장실이랑 샤워시설 있으면 좋고요."}, {"sid": "P1", "name": "봉준석", "text": "어쨌든 바다 근처로는 정리되네요."}, {"sid": "P3", "name": "탁상미", "text": "세부는 각자 다르지만요."}], "speakers": [{"sid": "P1", "name": "봉준석", "query": "바다 근처에 회를 먹을 수 있는 곳 추천해줘.", "aspects": ["해변/바다", "시설/편의"]}, {"sid": "P2", "name": "여경원", "query": "바닷가에 옛날 마을이나 골목이 남아 있는 곳 추천해줘.", "aspects": ["해변/바다", "역사유적"]}, {"sid": "P3", "name": "탁상미", "query": "바다 근처에 박물관이나 실내 전시관이 있는 곳 추천해줘.", "aspects": ["해변/바다", "박물관", "시설/편의"]}, {"sid": "P4", "name": "은형기", "query": "바다에서 수상스포츠를 즐길 수 있고 안전요원이 있는 곳 추천해줘.", "aspects": ["해변/바다", "수상스포츠", "서비스/친절"]}, {"sid": "P5", "name": "추민철", "query": "강물과 바다가 만나는 하구 쪽이고 데크 산책로와 편의시설이 잘 된 곳 추천해줘.", "aspects": ["계곡/강", "해변/바다", "트레킹/산책", "시설/편의"]}], "methods": {"embed": [{"rank": 1, "spot": "제천수상레저", "least": 0.835, "avg": 0.963, "nash": -0.2, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 2, "spot": "사계절 야영장", "least": 0.806, "avg": 0.947, "nash": -0.289, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 3, "spot": "도담정원", "least": 0.804, "avg": 0.885, "nash": -0.619, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 4, "spot": "송대공원", "least": 0.83, "avg": 0.882, "nash": -0.631, "why": {"sentence": "송대공원은 저수지를 끼고 조성된 공원으로, 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false, "utils": {"P1": 0.971, "P2": 0.711, "P3": 0.888, "P4": 0.801, "P5": 0.866}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["트레킹/산책", "해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "피크닉"]}}, {"rank": 5, "spot": "노르딕민박", "least": 0.782, "avg": 0.866, "nash": -0.73, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 6, "spot": "이티성 풀빌라", "least": 0.825, "avg": 0.86, "nash": -0.755, "why": {"sentence": "산 정상에 위치한 곳이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false, "utils": {"P1": 0.348, "P2": 0.683, "P3": 0.712, "P4": 1.0, "P5": 0.789}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["수상스포츠", "해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["수상스포츠", "계곡/강", "해변/바다"]}}, {"rank": 7, "spot": "청풍 황석리 고가", "least": 0.804, "avg": 0.859, "nash": -0.764, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 8, "spot": "충북아쿠아리움", "least": 0.771, "avg": 0.858, "nash": -0.78, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 9, "spot": "괴산호", "least": 0.775, "avg": 0.854, "nash": -0.799, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 10, "spot": "충주카누캠핑장", "least": 0.833, "avg": 0.854, "nash": -0.791, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}], "nash": [{"rank": 1, "spot": "송대공원", "least": 0.711, "avg": 0.847, "nash": -0.855, "why": {"sentence": "송대공원은 저수지를 끼고 조성된 공원으로, 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false, "utils": {"P1": 0.971, "P2": 0.711, "P3": 0.888, "P4": 0.801, "P5": 0.866}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["트레킹/산책", "해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "피크닉"]}}, {"rank": 2, "spot": "클럽이에스제천리조트", "least": 0.535, "avg": 0.751, "nash": -1.506, "why": {"sentence": "이곳은 청풍호반에 위치한 숙박시설로, 바다 근처 여행지를 원하시는 그룹의 요청과는 맞지 않아요.", "passed": false, "utils": {"P1": 0.845, "P2": 0.696, "P3": 0.848, "P4": 0.831, "P5": 0.535}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["계곡/강", "해변/바다", "피크닉"]}}, {"rank": 3, "spot": "마로니에숲캠핑장", "least": 0.618, "avg": 0.744, "nash": -1.51, "why": {"sentence": "이곳은 충북 옥천의 저수지 앞 숲에 위치한 캠핑장이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.79, "P2": 0.683, "P3": 0.847, "P4": 0.781, "P5": 0.618}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["계곡/강", "해변/바다", "피크닉"]}}, {"rank": 4, "spot": "클럽멤피스글램핑", "least": 0.435, "avg": 0.738, "nash": -1.675, "why": {"sentence": "이곳은 충주호의 풍경을 즐길 수 있는 곳이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.883, "P2": 0.697, "P3": 0.859, "P4": 0.814, "P5": 0.435}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["수상스포츠", "해변/바다"]}, {"name": "추민철", "aspects": ["트레킹/산책", "해변/바다"]}], "top_cats": ["해변/바다", "트레킹/산책", "수상스포츠"]}}, {"rank": 5, "spot": "이티성 풀빌라", "least": 0.348, "avg": 0.706, "nash": -2.014, "why": {"sentence": "산 정상에 위치한 곳이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false, "utils": {"P1": 0.348, "P2": 0.683, "P3": 0.712, "P4": 1.0, "P5": 0.789}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["수상스포츠", "해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["수상스포츠", "계곡/강", "해변/바다"]}}, {"rank": 6, "spot": "충주호 유람선", "least": 0.389, "avg": 0.676, "nash": -2.141, "why": {"sentence": "이곳은 내륙의 바다라고 불리는 충주호를 둘러보는 유람선 여행지로, 참가자들이 공통으로 원하시는 실제 바다나 해변과는 거리가 멀어요.", "passed": false, "utils": {"P1": 0.83, "P2": 0.691, "P3": 0.855, "P4": 0.617, "P5": 0.389}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["해변/바다"]}], "top_cats": ["해변/바다"]}}, {"rank": 7, "spot": "악어봉", "least": 0.54, "avg": 0.651, "nash": -2.187, "why": {"sentence": "악어봉은 충주호를 내려다볼 수 있는 곳이지만, 그룹이 요청한 바다 근처는 아니에요.", "passed": false, "utils": {"P1": 0.54, "P2": 0.645, "P3": 0.78, "P4": 0.708, "P5": 0.585}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["계곡/강", "해변/바다", "피크닉"]}}, {"rank": 8, "spot": "천등산캠핑장", "least": 0.524, "avg": 0.639, "nash": -2.299, "why": {"sentence": "천등산캠핑장은 계곡과 수영장이 있는 곳이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false, "utils": {"P1": 0.659, "P2": 0.666, "P3": 0.805, "P4": 0.542, "P5": 0.524}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["트레킹/산책", "해변/바다"]}], "top_cats": ["산/숲", "트레킹/산책", "해변/바다"]}}, {"rank": 9, "spot": "한반도지형전망공원", "least": 0.462, "avg": 0.612, "nash": -2.527, "why": {"sentence": "이곳은 바다가 아닌 초평저수지를 조망하는 곳이라 해변이나 바다를 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.462, "P2": 0.566, "P3": 0.764, "P4": 0.688, "P5": 0.581}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["계곡/강", "해변/바다"]}}, {"rank": 10, "spot": "칠보산(괴산)", "least": 0.456, "avg": 0.612, "nash": -2.562, "why": {"sentence": "칠보산은 산으로 이루어진 곳이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.456, "P2": 0.581, "P3": 0.845, "P4": 0.616, "P5": 0.56}, "matched": [{"name": "봉준석", "aspects": ["시설/편의", "해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["시설/편의", "해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["시설/편의", "트레킹/산책", "해변/바다"]}], "top_cats": ["트레킹/산책", "시설/편의", "해변/바다"]}}, {"rank": 11, "spot": "낙천탕", "least": 0.327, "avg": 0.621, "nash": -2.623, "why": {"sentence": "이곳은 충북 충주의 온천목욕탕이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 12, "spot": "청주실내수영장", "least": 0.38, "avg": 0.618, "nash": -2.654, "why": {"sentence": "청주시에 위치한 실내 수영장이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 13, "spot": "디투어스캠프클럽", "least": 0.362, "avg": 0.602, "nash": -2.689, "why": {"sentence": "이곳은 바다가 아닌 청풍호 근처에 위치해 있어 바다를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 14, "spot": "단양 무지개 오토캠핑장", "least": 0.408, "avg": 0.598, "nash": -2.709, "why": {"sentence": "이곳은 남한강과 생태습지 사이에 위치한 캠핑장이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 15, "spot": "단양 금굴 구석기유적지", "least": 0.336, "avg": 0.582, "nash": -2.988, "why": {"sentence": "이곳은 남한강가에 있는 동굴 유적지라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 16, "spot": "도담삼봉", "least": 0.177, "avg": 0.692, "nash": -2.998, "why": {"sentence": "도담삼봉은 강과 풍경을 즐기는 곳으로, 바다 근처 여행지를 원하시는 그룹의 요청과는 맞지 않아요.", "passed": false}}, {"rank": 17, "spot": "파인카라반캠핑장", "least": 0.232, "avg": 0.599, "nash": -3.01, "why": {"sentence": "이곳은 남한강 변과 계곡 인근에 위치해 있어 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 18, "spot": "목도강수욕장", "least": 0.283, "avg": 0.575, "nash": -3.111, "why": {"sentence": "이곳은 바다가 아닌 강변에 위치한 휴식 공간이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 19, "spot": "월악산국립공원 송계야영장", "least": 0.173, "avg": 0.616, "nash": -3.248, "why": {"sentence": "이곳은 송계계곡을 끼고 있는 산간 지역이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 20, "spot": "소백산자연휴양림", "least": 0.346, "avg": 0.54, "nash": -3.251, "why": {"sentence": "소백산자연휴양림은 풍부한 산림자원을 활용한 휴양림으로, 바다 근처를 원하시는 그룹의 요청과는 맞지 않아요.", "passed": false}}, {"rank": 21, "spot": "것대산", "least": 0.275, "avg": 0.561, "nash": -3.262, "why": {"sentence": "것대산은 청주에 위치한 산으로, 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 22, "spot": "석문", "least": 0.308, "avg": 0.539, "nash": -3.505, "why": {"sentence": "이곳은 바다가 아닌 남한강의 풍경을 즐길 수 있는 곳이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 23, "spot": "나인밸리파크", "least": 0.134, "avg": 0.577, "nash": -3.592, "why": {"sentence": "나인밸리파크는 자연 공간과 다양한 먹거리를 갖춘 복합 문화 공간이지만, 그룹이 요청한 바다 근처라는 조건에 부합하는지에 대한 정보가 없습니다.", "passed": false}}, {"rank": 24, "spot": "충주 민물고기전시관", "least": 0.215, "avg": 0.512, "nash": -3.688, "why": {"sentence": "이곳은 민물고기 전시관으로, 바다 근처 여행지를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 25, "spot": "수생식물학습원", "least": 0.05, "avg": 0.675, "nash": -3.736, "why": {"sentence": "이곳은 바다가 아닌 대청호 호수 위에 자리 잡은 정원이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 26, "spot": "옥순대교", "least": 0.241, "avg": 0.524, "nash": -3.738, "why": {"sentence": "옥순대교는 바다가 아닌 청풍호와 기암절벽이 어우러진 곳이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 27, "spot": "단양 사인암", "least": 0.05, "avg": 0.678, "nash": -3.788, "why": {"sentence": "이곳은 계곡과 기암절벽이 어우러진 곳이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 28, "spot": "장계관광지", "least": 0.112, "avg": 0.566, "nash": -3.79, "why": {"sentence": "장계관광지는 바다가 아닌 호반에 위치한 곳이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 29, "spot": "향수호수길", "least": 0.199, "avg": 0.502, "nash": -3.901, "why": {"sentence": "이곳은 바다가 아닌 대청호반을 따라 조성된 호수길이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 30, "spot": "문의문화유산단지", "least": 0.162, "avg": 0.548, "nash": -3.956, "why": {"sentence": "문의문화유산단지는 대청호반에 위치해 있지만, 그룹이 요청한 바다 근처는 아니에요.", "passed": false}}, {"rank": 31, "spot": "하너미 캠핑장", "least": 0.15, "avg": 0.503, "nash": -4.018, "why": {"sentence": "충북 충주에 위치한 캠핑장이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 32, "spot": "제천 옥순봉 출렁다리", "least": 0.05, "avg": 0.636, "nash": -4.048, "why": {"sentence": "이곳은 호반과 옥순봉을 둘러볼 수 있는 곳이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 33, "spot": "만수계곡", "least": 0.167, "avg": 0.494, "nash": -4.089, "why": {"sentence": "만수계곡은 속리산에 위치한 계곡이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 34, "spot": "백곡저수지", "least": 0.191, "avg": 0.477, "nash": -4.105, "why": {"sentence": "이곳은 농업용수를 위한 저수지라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 35, "spot": "수옥정관광지", "least": 0.114, "avg": 0.508, "nash": -4.177, "why": {"sentence": "수옥정관광지는 폭포와 저수지, 산책로 등이 있는 곳이라 바다 근처를 원하시는 그룹의 요청과는 맞지 않아요.", "passed": false}}, {"rank": 36, "spot": "부소담악(추소정)", "least": 0.267, "avg": 0.459, "nash": -4.284, "why": {"sentence": "이곳은 바다가 아닌 대청댐 호수와 절벽이 어우러진 곳이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 37, "spot": "수주팔봉 야영지", "least": 0.161, "avg": 0.487, "nash": -4.37, "why": {"sentence": "이곳은 바다가 아닌 달천이라는 강가에 위치해 있어 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 38, "spot": "리솜포레스트(제천)", "least": 0.185, "avg": 0.496, "nash": -4.392, "why": {"sentence": "이곳은 울창한 원시림과 산으로 둘러싸인 친환경 리조트라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 39, "spot": "덕동계곡", "least": 0.085, "avg": 0.517, "nash": -4.436, "why": {"sentence": "덕동계곡은 산에서 발원하여 흐르는 계곡이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 40, "spot": "도담삼봉 모터보트", "least": 0.05, "avg": 0.603, "nash": -4.527, "why": {"sentence": "이곳은 남한강 상류에 위치한 곳이라 바다 근처 여행지를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 41, "spot": "앙성온천지구", "least": 0.114, "avg": 0.462, "nash": -4.665, "why": {"sentence": "이곳은 탄산수 온천타운이라 바다 근처 여행지를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 42, "spot": "소나무숲아래캠핑장", "least": 0.105, "avg": 0.478, "nash": -4.679, "why": {"sentence": "이곳은 충북 충주에 위치한 소나무 숲과 계곡 캠핑장이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 43, "spot": "탄금호 야영장", "least": 0.05, "avg": 0.533, "nash": -4.717, "why": {"sentence": "탄금호 야영장은 충북 충주에 위치해 있어 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 44, "spot": "수암골전망대", "least": 0.109, "avg": 0.459, "nash": -4.836, "why": {"sentence": "수암골전망대는 청주 시내를 조망할 수 있는 곳이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 45, "spot": "수주팔봉", "least": 0.051, "avg": 0.527, "nash": -4.854, "why": {"sentence": "수주팔봉은 강과 기암계곡이 어우러진 곳이라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 46, "spot": "쌍곡예당", "least": 0.11, "avg": 0.441, "nash": -4.933, "why": {"sentence": "이곳은 쌍곡계곡에 위치한 곳이라 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 47, "spot": "다리안 연성전단대", "least": 0.103, "avg": 0.458, "nash": -4.955, "why": {"sentence": "소백산 국립공원 입구에 위치한 지질학적 장소라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 48, "spot": "백운일출캠핑장", "least": 0.05, "avg": 0.502, "nash": -4.988, "why": {"sentence": "이곳은 산으로 둘러싸여 있고 계곡을 끼고 있는 곳이라, 바다 근처를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 49, "spot": "다리안계곡", "least": 0.092, "avg": 0.455, "nash": -5.091, "why": {"sentence": "다리안계곡은 맑은 물이 흐르는 계곡이라 바다 근처 여행지를 원하시는 그룹의 요청과 맞지 않아요.", "passed": false}}, {"rank": 50, "spot": "산막이옛길", "least": 0.05, "avg": 0.491, "nash": -5.159, "why": {"sentence": "산막이옛길은 괴산댐 호수를 끼고 있는 산책로라 바다 근처를 원하시는 분들께는 맞지 않아요.", "passed": false}}], "llm": [{"rank": 1, "spot": "송대공원", "least": 0.711, "avg": 0.847, "nash": -0.855, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.971, "P2": 0.711, "P3": 0.888, "P4": 0.801, "P5": 0.866}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["트레킹/산책", "해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "피크닉"]}}, {"rank": 2, "spot": "천등산캠핑장", "least": 0.524, "avg": 0.639, "nash": -2.299, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.659, "P2": 0.666, "P3": 0.805, "P4": 0.542, "P5": 0.524}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["트레킹/산책", "해변/바다"]}], "top_cats": ["산/숲", "트레킹/산책", "해변/바다"]}}, {"rank": 3, "spot": "칠보산(괴산)", "least": 0.456, "avg": 0.612, "nash": -2.562, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.456, "P2": 0.581, "P3": 0.845, "P4": 0.616, "P5": 0.56}, "matched": [{"name": "봉준석", "aspects": ["시설/편의", "해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["시설/편의", "해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["시설/편의", "트레킹/산책", "해변/바다"]}], "top_cats": ["트레킹/산책", "시설/편의", "해변/바다"]}}, {"rank": 4, "spot": "낙천탕", "least": 0.327, "avg": 0.621, "nash": -2.623, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.327, "P2": 0.624, "P3": 0.713, "P4": 0.58, "P5": 0.861}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "트레킹/산책", "해변/바다"]}], "top_cats": ["계곡/강", "해변/바다", "트레킹/산책"]}}, {"rank": 5, "spot": "청주실내수영장", "least": 0.38, "avg": 0.618, "nash": -2.654, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.38, "P2": 0.628, "P3": 0.73, "P4": 0.908, "P5": 0.445}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["수상스포츠", "해변/바다"]}, {"name": "추민철", "aspects": ["해변/바다"]}], "top_cats": ["접근성/교통", "수상스포츠", "해변/바다"]}}, {"rank": 6, "spot": "도담삼봉", "least": 0.177, "avg": 0.692, "nash": -2.998, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 1.0, "P2": 1.0, "P3": 1.0, "P4": 0.281, "P5": 0.177}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["역사유적", "해변/바다"]}, {"name": "탁상미", "aspects": ["박물관", "해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["해변/바다"]}], "top_cats": ["역사유적", "해변/바다", "박물관"]}}, {"rank": 7, "spot": "소백산자연휴양림", "least": 0.346, "avg": 0.54, "nash": -3.251, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.346, "P2": 0.563, "P3": 0.714, "P4": 0.653, "P5": 0.427}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "해변/바다"]}], "top_cats": ["해변/바다", "계곡/강", "피크닉"]}}, {"rank": 8, "spot": "것대산", "least": 0.275, "avg": 0.561, "nash": -3.262, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.275, "P2": 0.778, "P3": 0.711, "P4": 0.657, "P5": 0.383}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["역사유적", "해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["해변/바다"]}], "top_cats": ["역사유적", "해변/바다", "사찰/성지"]}}, {"rank": 9, "spot": "나인밸리파크", "least": 0.134, "avg": 0.577, "nash": -3.592, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.487, "P2": 0.654, "P3": 0.753, "P4": 0.134, "P5": 0.857}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["계곡/강", "트레킹/산책", "해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "계곡/강"]}}, {"rank": 10, "spot": "충주 민물고기전시관", "least": 0.215, "avg": 0.512, "nash": -3.688, "why": {"sentence": "조건 0/1 충족 · 확인불가: 바다 근처", "passed": false, "partial": {"m": 0, "n": 1, "matched": [], "unmet": [], "unknown": ["바다 근처"]}, "utils": {"P1": 0.215, "P2": 0.583, "P3": 0.51, "P4": 0.619, "P5": 0.631}, "matched": [{"name": "봉준석", "aspects": ["해변/바다"]}, {"name": "여경원", "aspects": ["해변/바다"]}, {"name": "탁상미", "aspects": ["해변/바다"]}, {"name": "은형기", "aspects": ["해변/바다"]}, {"name": "추민철", "aspects": ["해변/바다"]}], "top_cats": ["해변/바다"]}}]}}]}, "METHODS": ["embed", "nash", "llm"], "METHOD_LABELS": {"embed": "① 임베딩", "nash": "② 임베딩→Nash", "llm": "③ 임베딩→Nash→LLM"}, "FINAL_SIZE": 10, "DISPLAY_K": 10};
+const {DATA,METHODS,METHOD_LABELS:ML,FINAL_SIZE,DISPLAY_K}=P;
+const $=id=>document.getElementById(id);
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function opt(sel,vals,labels){sel.innerHTML=vals.map(v=>`<option value="${v}">${labels?labels[v]||v:v}</option>`).join('');}
+const heat=(n,mx)=>{if(!n)return'#fff';const t=Math.min(1,n/mx);const r=Math.round(255-(255-76)*t),g=Math.round(255-(255-114)*t),b=Math.round(255-(255-176)*t);return`rgb(${r},${g},${b})`;};
+
+const regions=Object.keys(DATA);
+opt($('region'),regions);
+
+function curDia(){return DATA[$('region').value].find(d=>d.id===$('dialogue').value);}
+function fillDialogues(){const ds=DATA[$('region').value];opt($('dialogue'),ds.map(d=>d.id));render();}
+
+function tipHtml(x,showPass){
+ const w=x.why||{};
+ if(w.partial) return `<b style="color:#ffd27f">◐ 부분충족 ${w.partial.m}/${w.partial.n}</b><br>${esc(w.sentence)||''}`;
+ if(showPass&&w.passed===true) return `<b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc(w.sentence)||'추천 이유 정보 없음'}`;
+ if(showPass&&w.passed===false) return `<b style="color:#ff9a9a">✘ LLM 검수 탈락</b><br>${esc(w.sentence)||'근거 부족/부적합'}`;
+ return esc(w.sentence)||'추천 이유 정보 없음';
+}
+
+function render(){
+ const d=curDia();if(!d)return;
+ $('meta').textContent=`${d.id} · ${d.type||''} · ${d.group_size}명`;
+ $('gq').innerHTML=`<b>${esc(d.group_query||'')}</b><br>`+
+   ((d.key_aspects&&d.key_aspects.length)?`<div style="margin-top:6px">핵심: `+d.key_aspects.map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`:'');
+ $('transcript').innerHTML=(d.transcript||[]).map(t=>
+   `<div class="turn"><div class="who">${esc(t.name||t.sid)}</div><div class="utt">${esc(t.text)}</div></div>`).join('')||'<span class="badge">원문 없음</span>';
+ $('speakers').innerHTML=(d.speakers||[]).map(s=>
+   `<div class="spk"><div class="nm">${esc(s.name)} <span class="badge">${esc(s.sid)}</span></div>`+
+   `<div class="q">"${esc(s.query)}"</div>`+
+   (s.aspects||[]).map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`).join('');
+
+ // 데이터가 있는 단계만 컬럼 표시
+ const present=METHODS.filter(m=>(d.methods[m]||[]).length);
+ const cnt={};
+ present.forEach(m=>{(d.methods[m]||[]).slice(0,DISPLAY_K).forEach(x=>{cnt[x.spot]=(cnt[x.spot]||0)+1;});});
+ const mxc=Math.max(1,...Object.values(cnt));
+ $('topk').innerHTML=present.map(m=>{
+   const showPass=(m!=='embed');
+   const spots=(d.methods[m]||[]).slice(0,DISPLAY_K);
+   return `<div class="col"><h3>${ML[m]}</h3>`+
+     spots.map(x=>`<div class="spot" style="background:${heat(cnt[x.spot],mxc)};${cnt[x.spot]>=3?'color:#fff':''}">`+
+       `<span class="rk">${x.rank}</span><span class="nm">${esc(x.spot)}</span><div class="tip">${tipHtml(x,showPass)}</div></div>`).join('')+`</div>`;
+ }).join('')||'<span class="badge">데이터 없음</span>';
+
+ renderFinal();
+ renderWhy();
+}
+
+function renderFinal(){
+ const d=curDia();if(!d)return;
+ const rows=(d.methods['llm']||[]);
+ const pick=rows.slice(0,FINAL_SIZE);
+ let h='<div class="finalgrid">';
+ for(let i=0;i<FINAL_SIZE;i++){
+   const x=pick[i];
+   if(x){
+     const pt=(x.why||{}).partial;
+     if(pt){
+       h+=`<div class="slot partial"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)} <span class="badge" style="color:#b8860b">◐ ${pt.m}/${pt.n}</span></span>`+
+          `<div class="tip"><b style="color:#ffd27f">◐ 부분충족 ${pt.m}/${pt.n}</b><br>${esc((x.why||{}).sentence)||''}</div></div>`;
+     }else{
+       h+=`<div class="slot pass"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)}</span>`+
+          `<div class="tip"><b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc((x.why||{}).sentence)||'추천 이유 정보 없음'}</div></div>`;
+     }
+   }else{
+     h+=`<div class="slot empty"><span class="rk">${i+1}</span><span class="nm">—</span></div>`;
+   }
+ }
+ h+='</div>';
+ $('final').innerHTML=h;
+ const npart=rows.filter(r=>(r.why||{}).partial).length;
+ $('finalmeta').textContent=`통과 ${rows.length-npart}개 + 부분충족 ${npart}개 / ${FINAL_SIZE}칸`;
+}
+
+function renderWhy(){
+ const d=curDia();if(!d)return;
+ const spots=(d.methods['llm']||[]).slice(0,FINAL_SIZE);
+ $('why').innerHTML=spots.map((x,ri)=>{
+   const w=x.why||{};const us=Object.entries(w.utils||{});
+   const ubars=us.map(([sid,v])=>{const nm=(d.speakers.find(s=>s.sid===sid)||{}).name||sid;
+     return `<div class="ub"><div class="lab"><span>${esc(nm)}</span><span>${(+v).toFixed(2)}</span></div>`+
+       `<div class="track"><div class="fill" style="width:${Math.round(v*100)}%"></div></div></div>`;}).join('');
+   const matched=(w.matched||[]).map(mm=>`<span class="pill">${esc(mm.name)}: ${(mm.aspects||[]).join('·')}</span>`).join('')||'<span class="badge">직접 매칭 없음</span>';
+   const cats=(w.top_cats||[]).filter(c=>c);
+   return `<div class="whyrow"><div class="h"><span>#${ri+1} ${esc(x.spot)} ${w.partial?`<span class="badge" style="color:#b8860b">◐ 부분충족 ${w.partial.m}/${w.partial.n}</span>`:`<span class="badge" style="color:#1e8449">LLM 통과</span>`}</span>`+
+     `<span class="badge">최소만족 ${x.least} · 평균 ${x.avg}</span></div>`+
+     `<div class="sent">${esc(w.sentence)||'<span class="badge">이유 미생성</span>'}</div>`+
+     `<div>${matched}</div>`+
+     (cats.length?`<div class="catline">장소 성격: ${cats.map(c=>`<b>${esc(c)}</b>`).join(', ')}</div>`:'')+
+     `<div class="uwrap">${ubars}</div></div>`;
+ }).join('')||'<span class="badge">통과 장소 없음</span>';
+}
+
+$('region').onchange=fillDialogues;
+$('dialogue').onchange=render;
+fillDialogues();
+</script>
+</body></html>

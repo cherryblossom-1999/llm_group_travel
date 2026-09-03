@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>그룹 여행 추천 대시보드 v4 final_2 (부분충족 백필)</title>
+<style>
+ :root{--accent:#4C72B0;--accent2:#55A868;}
+ *{box-sizing:border-box}
+ body{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;margin:0;color:#1a1a1a;background:#f4f5f7}
+ header{background:#fff;border-bottom:1px solid #e3e3e3;padding:14px 22px;position:sticky;top:0;z-index:5}
+ header h1{font-size:18px;margin:0 0 8px}
+ select{font-size:14px;padding:5px 9px;margin-right:12px;border:1px solid #ccc;border-radius:6px}
+ .wrap{display:flex;gap:18px;padding:18px 22px;align-items:flex-start}
+ .left{flex:0 0 420px;max-width:420px;display:flex;flex-direction:column;gap:14px}
+ .right{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+ .card{background:#fff;border:1px solid #e3e3e3;border-radius:10px;padding:14px}
+ .card h2{font-size:14px;margin:0 0 10px;border-left:4px solid var(--accent);padding-left:8px}
+ .gq{background:#eef3fb;border-radius:8px;padding:10px;font-size:14px;line-height:1.5}
+ .tag{display:inline-block;background:#e8eefc;color:#33518a;border-radius:20px;padding:2px 9px;font-size:12px;margin:2px 3px 2px 0}
+ .turn{display:flex;gap:8px;margin:7px 0;font-size:13px;line-height:1.45}
+ .who{flex:0 0 64px;font-weight:600;color:#33518a;text-align:right}
+ .utt{background:#f6f7f9;border-radius:8px;padding:6px 10px;flex:1}
+ .spk{border:1px solid #eee;border-radius:8px;padding:8px 10px;margin:7px 0;background:#fcfcfd}
+ .spk .nm{font-weight:600;font-size:13px}
+ .spk .q{font-size:13px;color:#444;margin:3px 0}
+ .cols{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+ .col{min-width:200px;flex:1;background:#fafbfc;border:1px solid #e7e7e7;border-radius:8px;padding:8px}
+ .col h3{font-size:12px;margin:0 0 8px;text-align:center;color:#333}
+ .spot{position:relative;padding:4px 7px;margin:3px 0;border-radius:6px;font-size:12px;display:flex;justify-content:space-between;gap:6px;background:#fff;border:1px solid #eee;cursor:default}
+ .spot .rk{color:#aaa;font-variant-numeric:tabular-nums;flex:0 0 18px}
+ .spot .nm{flex:1}
+ .spot .tip,.slot .tip{visibility:hidden;opacity:0;position:absolute;z-index:30;left:50%;top:125%;transform:translateX(-50%);
+   width:240px;background:#222;color:#fff;font-size:12px;line-height:1.5;padding:8px 10px;border-radius:8px;font-weight:400;
+   box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .12s;white-space:normal;text-align:left}
+ .spot .tip::after,.slot .tip::after{content:"";position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:#222}
+ .spot:hover .tip,.slot:hover .tip{visibility:visible;opacity:1}
+ .finalgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+ .slot{position:relative;border:1px solid #e7e7e7;border-radius:8px;padding:7px 10px;font-size:13px;display:flex;gap:8px;background:#fff;cursor:default}
+ .slot.pass{border-color:#dfe6f2}
+ .slot.empty{color:#c0c0c0;background:#fafafa;border-style:dashed}
+ .slot.partial{border-color:#f0ad4e;background:#fff8ec}
+ .slot .rk{color:#999;flex:0 0 20px;font-weight:600}
+ .slot .nm{flex:1}
+ .whyrow{border:1px solid #ececec;border-radius:8px;padding:10px;margin:8px 0;background:#fff}
+ .whyrow .h{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+ .whyrow .sent{font-size:13px;color:#444;margin:6px 0}
+ .uwrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+ .ub{font-size:12px;min-width:108px}
+ .ub .lab{display:flex;justify-content:space-between;color:#555}
+ .track{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:2px}
+ .fill{height:8px;background:var(--accent2)}
+ .catline{font-size:12px;color:#666;margin-top:6px}
+ .legend{font-size:12px;color:#666;margin:2px 0 8px}
+ .pill{font-size:12px;color:#2f6f43;background:#eaf5ec;border-radius:6px;padding:1px 7px;margin-right:4px}
+ .badge{font-size:11px;color:#888}
+</style></head><body>
+<header>
+ <h1>그룹 여행 추천 대시보드 v4 final_2 — 임베딩→Nash→LLM + 부분충족 백필 <span style='font-size:12px;color:#888;font-weight:400'>사전 계산 결과 · 충청북도</span></h1>
+ <div>
+  <label>권역 <select id="region"></select></label>
+  <label>대화 <select id="dialogue"></select></label>
+  <span class="badge" id="meta"></span>
+ </div>
+</header>
+<div class="wrap">
+ <div class="left">
+  <div class="card"><h2>그룹 쿼리 / 합의</h2><div class="gq" id="gq"></div></div>
+  <div class="card"><h2>대화 원문</h2><div id="transcript"></div></div>
+  <div class="card"><h2>참가자별 요약</h2><div id="speakers"></div></div>
+ </div>
+ <div class="right">
+  <div class="card"><h2>파이프라인 단계별 Top-K (공통 장소 강조)</h2>
+   <div class="legend">① 임베딩(필터 전) → ② 그룹 카테고리 필터 + Nash → ③ LLM 검수 통과.
+     색이 진할수록 여러 단계에서 공통 등장 · <b>장소에 마우스를 올리면</b> 이유가 표시됩니다.
+     데이터가 없는 단계는 표시하지 않습니다.</div>
+   <div class="cols" id="topk"></div></div>
+  <div class="card"><h2>⑥ 최종 추천 (임베딩→Nash→LLM 통과) <span class="badge" id="finalmeta"></span></h2>
+   <div class="legend">③ 통과(초록) 장소를 먼저 채우고, 부족한 칸은 그룹쿼리를 핵심 조건으로 분해해 조건별 재검수한 <b style="color:#b8860b">부분충족 M/N(주황 ◐)</b> 후보로 채웁니다.</div>
+   <div id="final"></div></div>
+  <div class="card"><h2>왜 이곳을 추천하는가</h2>
+   <div class="legend">최종추천 장소별: 추천 이유 · 참가자별 만족도 · 충족한 선호 · 장소 성격(점수가 있는 카테고리만)</div>
+   <div id="why"></div></div>
+ </div>
+</div>
+
+<script>
+const P={"DATA": {"충청북도": [{"id": "d_lo_04", "type": "full", "group_size": 5, "group_query": "사찰과 박물관이 있고, 주차장에서 가까우며 산책하기 좋은 완만한 숲길이 있는 산으로 추천해줘.", "key_aspects": ["산/숲", "사찰/성지", "트레킹/산책", "박물관", "접근성/교통", "피크닉"], "transcript": [{"sid": "P1", "name": "좌현식", "text": "이번엔 산 쪽으로 갑시다. 나무 그늘에서 좀 쉬고 싶네요."}, {"sid": "P2", "name": "민들레", "text": "저도 산 좋아요. 절 하나 들르면 더 좋고요."}, {"sid": "P3", "name": "사공혁", "text": "산이면 걷는 거죠. 나는 능선까지는 아니어도 숲길은 걷고 싶어요."}, {"sid": "P4", "name": "안보람", "text": "저는 걷다가 자리 펴고 도시락 먹는 게 제일 좋아요."}, {"sid": "P5", "name": "천중기", "text": "산에 있는 옛날 절이나 유물전시관 같은 데도 재밌던데."}, {"sid": "P1", "name": "좌현식", "text": "다들 산으로는 의견이 모이네요."}, {"sid": "P2", "name": "민들레", "text": "절이 산에 있으니 자연스럽게 같이 되겠어요."}, {"sid": "P3", "name": "사공혁", "text": "길이 완만하면 다들 편할 텐데."}, {"sid": "P4", "name": "안보람", "text": "평평한 자리만 하나 있으면 저는 만족이에요."}, {"sid": "P5", "name": "천중기", "text": "절 옆에 유물관 있는 데도 꽤 있어요."}, {"sid": "P1", "name": "좌현식", "text": "나는 그늘만 깊으면 됩니다."}, {"sid": "P2", "name": "민들레", "text": "저는 새벽에 조용한 시간이 좋아요."}, {"sid": "P3", "name": "사공혁", "text": "한 시간 반 정도 코스면 딱이겠네요."}, {"sid": "P4", "name": "안보람", "text": "주차장에서 가까우면 좋겠어요. 짐이 좀 있어서."}, {"sid": "P5", "name": "천중기", "text": "계단 많은 데는 좀 부담스럽고요."}, {"sid": "P1", "name": "좌현식", "text": "산으로 가는 건 정해진 셈이네요."}, {"sid": "P3", "name": "사공혁", "text": "어느 산이냐만 남았죠."}], "speakers": [{"sid": "P1", "name": "좌현식", "query": "나무 그늘이 울창한 산을 추천해줘.", "aspects": ["산/숲"]}, {"sid": "P2", "name": "민들레", "query": "산에 있는 사찰이 포함된 곳으로 추천해줘.", "aspects": ["산/숲", "사찰/성지"]}, {"sid": "P3", "name": "사공혁", "query": "완만한 숲길을 산책할 수 있는 곳으로 추천해줘.", "aspects": ["트레킹/산책", "산/숲"]}, {"sid": "P4", "name": "안보람", "query": "도시락을 먹을 수 있는 평평한 자리와 주차장에서 가까운 곳으로 추천해줘.", "aspects": ["피크닉", "접근성/교통"]}, {"sid": "P5", "name": "천중기", "query": "산에 있는 사찰이나 박물관이 있는 곳으로 추천해줘.", "aspects": ["산/숲", "사찰/성지", "박물관"]}], "methods": {"embed": [{"rank": 1, "spot": "배론성지", "least": 0.922, "avg": 0.959, "nash": -0.209, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 2, "spot": "보은글램핑", "least": 0.912, "avg": 0.957, "nash": -0.22, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 3, "spot": "연풍성지", "least": 0.934, "avg": 0.955, "nash": -0.234, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 4, "spot": "생거진천치유의숲", "least": 0.907, "avg": 0.952, "nash": -0.25, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 5, "spot": "금관숲야영장", "least": 0.908, "avg": 0.942, "nash": -0.299, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 6, "spot": "팔봉글램핑", "least": 0.903, "avg": 0.94, "nash": -0.311, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 7, "spot": "월악한울오토캠핑장", "least": 0.908, "avg": 0.938, "nash": -0.32, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 8, "spot": "좌구산 분젓치 산새길 테마로드", "least": 0.897, "avg": 0.935, "nash": -0.338, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 9, "spot": "청주 발산공원", "least": 0.888, "avg": 0.934, "nash": -0.343, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 10, "spot": "북단양리조트", "least": 0.906, "avg": 0.933, "nash": -0.35, "why": {"sentence": "", "passed": false, "utils": {}, "matched": [], "top_cats": []}}], "nash": [{"rank": 1, "spot": "의림지 파크 랜드", "least": 0.5, "avg": 0.5, "nash": -3.466, "why": {"sentence": "이곳은 놀이시설과 게임을 즐길 수 있는 곳이라 사찰, 박물관, 완만한 숲길을 원하시는 분들께는 맞지 않아요.", "passed": false, "utils": {"P1": 0.5, "P2": 0.5, "P3": 0.5, "P4": 0.5, "P5": 0.5}, "matched": [{"name": "사공혁", "aspects": ["트레킹/산책"]}, {"name": "안보람", "aspects": ["접근성/교통"]}], "top_cats": ["접근성/교통", "트레킹/산책", "계곡/강"]}}], "llm": [{"rank": 1, "spot": "월악한울오토캠핑장", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 1/3 충족 · 충족: 주차장 인접 · 확인불가: 사찰과 박물관, 완만한 숲길 산책로", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["주차장 인접"], "unmet": [], "unknown": ["사찰과 박물관", "완만한 숲길 산책로"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 2, "spot": "청주 발산공원", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 확인불가: 사찰과 박물관, 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 3, "spot": "충주탄금공원", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 확인불가: 사찰과 박물관, 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 4, "spot": "의림지 솔밭공원", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 1/3 충족 · 충족: 완만한 숲길 산책로 · 확인불가: 사찰과 박물관, 주차장 인접", "passed": false, "partial": {"m": 1, "n": 3, "matched": ["완만한 숲길 산책로"], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 5, "spot": "의림지 파크 랜드", "least": 0.5, "avg": 0.5, "nash": -3.466, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {"P1": 0.5, "P2": 0.5, "P3": 0.5, "P4": 0.5, "P5": 0.5}, "matched": [{"name": "사공혁", "aspects": ["트레킹/산책"]}, {"name": "안보람", "aspects": ["접근성/교통"]}], "top_cats": ["접근성/교통", "트레킹/산책", "계곡/강"]}}, {"rank": 6, "spot": "보은글램핑", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 7, "spot": "생거진천치유의숲", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 8, "spot": "팔봉글램핑", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 9, "spot": "북단양리조트", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {}, "matched": [], "top_cats": []}}, {"rank": 10, "spot": "중앙탑공원(충주)", "least": 0, "avg": 0, "nash": 0, "why": {"sentence": "조건 0/3 충족 · 확인불가: 사찰과 박물관, 주차장 인접, 완만한 숲길 산책로", "passed": false, "partial": {"m": 0, "n": 3, "matched": [], "unmet": [], "unknown": ["사찰과 박물관", "주차장 인접", "완만한 숲길 산책로"]}, "utils": {}, "matched": [], "top_cats": []}}]}}]}, "METHODS": ["embed", "nash", "llm"], "METHOD_LABELS": {"embed": "① 임베딩", "nash": "② 임베딩→Nash", "llm": "③ 임베딩→Nash→LLM"}, "FINAL_SIZE": 10, "DISPLAY_K": 10};
+const {DATA,METHODS,METHOD_LABELS:ML,FINAL_SIZE,DISPLAY_K}=P;
+const $=id=>document.getElementById(id);
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function opt(sel,vals,labels){sel.innerHTML=vals.map(v=>`<option value="${v}">${labels?labels[v]||v:v}</option>`).join('');}
+const heat=(n,mx)=>{if(!n)return'#fff';const t=Math.min(1,n/mx);const r=Math.round(255-(255-76)*t),g=Math.round(255-(255-114)*t),b=Math.round(255-(255-176)*t);return`rgb(${r},${g},${b})`;};
+
+const regions=Object.keys(DATA);
+opt($('region'),regions);
+
+function curDia(){return DATA[$('region').value].find(d=>d.id===$('dialogue').value);}
+function fillDialogues(){const ds=DATA[$('region').value];opt($('dialogue'),ds.map(d=>d.id));render();}
+
+function tipHtml(x,showPass){
+ const w=x.why||{};
+ if(w.partial) return `<b style="color:#ffd27f">◐ 부분충족 ${w.partial.m}/${w.partial.n}</b><br>${esc(w.sentence)||''}`;
+ if(showPass&&w.passed===true) return `<b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc(w.sentence)||'추천 이유 정보 없음'}`;
+ if(showPass&&w.passed===false) return `<b style="color:#ff9a9a">✘ LLM 검수 탈락</b><br>${esc(w.sentence)||'근거 부족/부적합'}`;
+ return esc(w.sentence)||'추천 이유 정보 없음';
+}
+
+function render(){
+ const d=curDia();if(!d)return;
+ $('meta').textContent=`${d.id} · ${d.type||''} · ${d.group_size}명`;
+ $('gq').innerHTML=`<b>${esc(d.group_query||'')}</b><br>`+
+   ((d.key_aspects&&d.key_aspects.length)?`<div style="margin-top:6px">핵심: `+d.key_aspects.map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`:'');
+ $('transcript').innerHTML=(d.transcript||[]).map(t=>
+   `<div class="turn"><div class="who">${esc(t.name||t.sid)}</div><div class="utt">${esc(t.text)}</div></div>`).join('')||'<span class="badge">원문 없음</span>';
+ $('speakers').innerHTML=(d.speakers||[]).map(s=>
+   `<div class="spk"><div class="nm">${esc(s.name)} <span class="badge">${esc(s.sid)}</span></div>`+
+   `<div class="q">"${esc(s.query)}"</div>`+
+   (s.aspects||[]).map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`).join('');
+
+ // 데이터가 있는 단계만 컬럼 표시
+ const present=METHODS.filter(m=>(d.methods[m]||[]).length);
+ const cnt={};
+ present.forEach(m=>{(d.methods[m]||[]).slice(0,DISPLAY_K).forEach(x=>{cnt[x.spot]=(cnt[x.spot]||0)+1;});});
+ const mxc=Math.max(1,...Object.values(cnt));
+ $('topk').innerHTML=present.map(m=>{
+   const showPass=(m!=='embed');
+   const spots=(d.methods[m]||[]).slice(0,DISPLAY_K);
+   return `<div class="col"><h3>${ML[m]}</h3>`+
+     spots.map(x=>`<div class="spot" style="background:${heat(cnt[x.spot],mxc)};${cnt[x.spot]>=3?'color:#fff':''}">`+
+       `<span class="rk">${x.rank}</span><span class="nm">${esc(x.spot)}</span><div class="tip">${tipHtml(x,showPass)}</div></div>`).join('')+`</div>`;
+ }).join('')||'<span class="badge">데이터 없음</span>';
+
+ renderFinal();
+ renderWhy();
+}
+
+function renderFinal(){
+ const d=curDia();if(!d)return;
+ const rows=(d.methods['llm']||[]);
+ const pick=rows.slice(0,FINAL_SIZE);
+ let h='<div class="finalgrid">';
+ for(let i=0;i<FINAL_SIZE;i++){
+   const x=pick[i];
+   if(x){
+     const pt=(x.why||{}).partial;
+     if(pt){
+       h+=`<div class="slot partial"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)} <span class="badge" style="color:#b8860b">◐ ${pt.m}/${pt.n}</span></span>`+
+          `<div class="tip"><b style="color:#ffd27f">◐ 부분충족 ${pt.m}/${pt.n}</b><br>${esc((x.why||{}).sentence)||''}</div></div>`;
+     }else{
+       h+=`<div class="slot pass"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)}</span>`+
+          `<div class="tip"><b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc((x.why||{}).sentence)||'추천 이유 정보 없음'}</div></div>`;
+     }
+   }else{
+     h+=`<div class="slot empty"><span class="rk">${i+1}</span><span class="nm">—</span></div>`;
+   }
+ }
+ h+='</div>';
+ $('final').innerHTML=h;
+ const npart=rows.filter(r=>(r.why||{}).partial).length;
+ $('finalmeta').textContent=`통과 ${rows.length-npart}개 + 부분충족 ${npart}개 / ${FINAL_SIZE}칸`;
+}
+
+function renderWhy(){
+ const d=curDia();if(!d)return;
+ const spots=(d.methods['llm']||[]).slice(0,FINAL_SIZE);
+ $('why').innerHTML=spots.map((x,ri)=>{
+   const w=x.why||{};const us=Object.entries(w.utils||{});
+   const ubars=us.map(([sid,v])=>{const nm=(d.speakers.find(s=>s.sid===sid)||{}).name||sid;
+     return `<div class="ub"><div class="lab"><span>${esc(nm)}</span><span>${(+v).toFixed(2)}</span></div>`+
+       `<div class="track"><div class="fill" style="width:${Math.round(v*100)}%"></div></div></div>`;}).join('');
+   const matched=(w.matched||[]).map(mm=>`<span class="pill">${esc(mm.name)}: ${(mm.aspects||[]).join('·')}</span>`).join('')||'<span class="badge">직접 매칭 없음</span>';
+   const cats=(w.top_cats||[]).filter(c=>c);
+   return `<div class="whyrow"><div class="h"><span>#${ri+1} ${esc(x.spot)} ${w.partial?`<span class="badge" style="color:#b8860b">◐ 부분충족 ${w.partial.m}/${w.partial.n}</span>`:`<span class="badge" style="color:#1e8449">LLM 통과</span>`}</span>`+
+     `<span class="badge">최소만족 ${x.least} · 평균 ${x.avg}</span></div>`+
+     `<div class="sent">${esc(w.sentence)||'<span class="badge">이유 미생성</span>'}</div>`+
+     `<div>${matched}</div>`+
+     (cats.length?`<div class="catline">장소 성격: ${cats.map(c=>`<b>${esc(c)}</b>`).join(', ')}</div>`:'')+
+     `<div class="uwrap">${ubars}</div></div>`;
+ }).join('')||'<span class="badge">통과 장소 없음</span>';
+}
+
+$('region').onchange=fillDialogues;
+$('dialogue').onchange=render;
+fillDialogues();
+</script>
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>그룹 여행 추천 대시보드 v4 final_2 (부분충족 백필)</title>
+<style>
+ :root{--accent:#4C72B0;--accent2:#55A868;}
+ *{box-sizing:border-box}
+ body{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;margin:0;color:#1a1a1a;background:#f4f5f7}
+ header{background:#fff;border-bottom:1px solid #e3e3e3;padding:14px 22px;position:sticky;top:0;z-index:5}
+ header h1{font-size:18px;margin:0 0 8px}
+ select{font-size:14px;padding:5px 9px;margin-right:12px;border:1px solid #ccc;border-radius:6px}
+ .wrap{display:flex;gap:18px;padding:18px 22px;align-items:flex-start}
+ .left{flex:0 0 420px;max-width:420px;display:flex;flex-direction:column;gap:14px}
+ .right{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+ .card{background:#fff;border:1px solid #e3e3e3;border-radius:10px;padding:14px}
+ .card h2{font-size:14px;margin:0 0 10px;border-left:4px solid var(--accent);padding-left:8px}
+ .gq{background:#eef3fb;border-radius:8px;padding:10px;font-size:14px;line-height:1.5}
+ .tag{display:inline-block;background:#e8eefc;color:#33518a;border-radius:20px;padding:2px 9px;font-size:12px;margin:2px 3px 2px 0}
+ .turn{display:flex;gap:8px;margin:7px 0;font-size:13px;line-height:1.45}
+ .who{flex:0 0 64px;font-weight:600;color:#33518a;text-align:right}
+ .utt{background:#f6f7f9;border-radius:8px;padding:6px 10px;flex:1}
+ .spk{border:1px solid #eee;border-radius:8px;padding:8px 10px;margin:7px 0;background:#fcfcfd}
+ .spk .nm{font-weight:600;font-size:13px}
+ .spk .q{font-size:13px;color:#444;margin:3px 0}
+ .cols{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+ .col{min-width:200px;flex:1;background:#fafbfc;border:1px solid #e7e7e7;border-radius:8px;padding:8px}
+ .col h3{font-size:12px;margin:0 0 8px;text-align:center;color:#333}
+ .spot{position:relative;padding:4px 7px;margin:3px 0;border-radius:6px;font-size:12px;display:flex;justify-content:space-between;gap:6px;background:#fff;border:1px solid #eee;cursor:default}
+ .spot .rk{color:#aaa;font-variant-numeric:tabular-nums;flex:0 0 18px}
+ .spot .nm{flex:1}
+ .spot .tip,.slot .tip{visibility:hidden;opacity:0;position:absolute;z-index:30;left:50%;top:125%;transform:translateX(-50%);
+   width:240px;background:#222;color:#fff;font-size:12px;line-height:1.5;padding:8px 10px;border-radius:8px;font-weight:400;
+   box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .12s;white-space:normal;text-align:left}
+ .spot .tip::after,.slot .tip::after{content:"";position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:#222}
+ .spot:hover .tip,.slot:hover .tip{visibility:visible;opacity:1}
+ .finalgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+ .slot{position:relative;border:1px solid #e7e7e7;border-radius:8px;padding:7px 10px;font-size:13px;display:flex;gap:8px;background:#fff;cursor:default}
+ .slot.pass{border-color:#dfe6f2}
+ .slot.empty{color:#c0c0c0;background:#fafafa;border-style:dashed}
+ .slot.partial{border-color:#f0ad4e;background:#fff8ec}
+ .slot .rk{color:#999;flex:0 0 20px;font-weight:600}
+ .slot .nm{flex:1}
+ .whyrow{border:1px solid #ececec;border-radius:8px;padding:10px;margin:8px 0;background:#fff}
+ .whyrow .h{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+ .whyrow .sent{font-size:13px;color:#444;margin:6px 0}
+ .uwrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+ .ub{font-size:12px;min-width:108px}
+ .ub .lab{display:flex;justify-content:space-between;color:#555}
+ .track{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:2px}
+ .fill{height:8px;background:var(--accent2)}
+ .catline{font-size:12px;color:#666;margin-top:6px}
+ .legend{font-size:12px;color:#666;margin:2px 0 8px}
+ .pill{font-size:12px;color:#2f6f43;background:#eaf5ec;border-radius:6px;padding:1px 7px;margin-right:4px}
+ .badge{font-size:11px;color:#888}
+</style></head><body>
+<header>
+ <h1>그룹 여행 추천 대시보드 v4 final_2 — 임베딩→Nash→LLM + 부분충족 백필 <span style='font-size:12px;color:#888;font-weight:400'>사전 계산 결과 · 강원도</span></h1>
+ <div>
+  <label>권역 <select id="region"></select></label>
+  <label>대화 <select id="dialogue"></select></label>
+  <span class="badge" id="meta"></span>
+ </div>
+</header>
+<div class="wrap">
+ <div class="left">
+  <div class="card"><h2>그룹 쿼리 / 합의</h2><div class="gq" id="gq"></div></div>
+  <div class="card"><h2>대화 원문</h2><div id="transcript"></div></div>
+  <div class="card"><h2>참가자별 요약</h2><div id="speakers"></div></div>
+ </div>
+ <div class="right">
+  <div class="card"><h2>파이프라인 단계별 Top-K (공통 장소 강조)</h2>
+   <div class="legend">① 임베딩(필터 전) → ② 그룹 카테고리 필터 + Nash → ③ LLM 검수 통과.
+     색이 진할수록 여러 단계에서 공통 등장 · <b>장소에 마우스를 올리면</b> 이유가 표시됩니다.
+     데이터가 없는 단계는 표시하지 않습니다.</div>
+   <div class="cols" id="topk"></div></div>
+  <div class="card"><h2>⑥ 최종 추천 (임베딩→Nash→LLM 통과) <span class="badge" id="finalmeta"></span></h2>
+   <div class="legend">③ 통과(초록) 장소를 먼저 채우고, 부족한 칸은 그룹쿼리를 핵심 조건으로 분해해 조건별 재검수한 <b style="color:#b8860b">부분충족 M/N(주황 ◐)</b> 후보로 채웁니다.</div>
+   <div id="final"></div></div>
+  <div class="card"><h2>왜 이곳을 추천하는가</h2>
+   <div class="legend">최종추천 장소별: 추천 이유 · 참가자별 만족도 · 충족한 선호 · 장소 성격(점수가 있는 카테고리만)</div>
+   <div id="why"></div></div>
+ </div>
+</div>
+
+<script>
+const P={"DATA": {"강원도": [{"id": "d_hi_04", "type": "none", "group_size": 5, "group_query": "각자의 선호가 뚜렷하여 합의된 여행지가 없습니다.", "key_aspects": [], "transcript": [{"sid": "P1", "name": "윤태식", "text": "나는 오래된 절에 가고 싶어. 조용한 데서 향 냄새 맡고 앉아 있으면 마음이 가라앉거든."}, {"sid": "P2", "name": "구혜란", "text": "절도 좋은데, 나는 옛날 집이나 성곽 같은 게 더 끌려. 사람이 살던 흔적이 남은 데."}, {"sid": "P3", "name": "백승철", "text": "두 분 다 옛날 거 좋아하시네. 나는 길을 좀 걷고 싶은데요. 능선 따라 쭉."}, {"sid": "P4", "name": "정미르", "text": "저는 바다요. 파도 소리 안 들으면 여행 온 것 같지가 않아요."}, {"sid": "P5", "name": "한동욱", "text": "나는 계곡물에 발 담그고 앉아 있고 싶어. 물소리 들으면서."}, {"sid": "P1", "name": "윤태식", "text": "바다는 사람이 너무 많아. 나는 조용한 데가 좋아."}, {"sid": "P2", "name": "구혜란", "text": "성곽 위에서 내려다보면 그것도 시원해요. 바다 안 가도."}, {"sid": "P3", "name": "백승철", "text": "성곽은 금방 끝나잖아요. 나는 반나절은 걸어야 걸은 것 같은데."}, {"sid": "P4", "name": "정미르", "text": "걷는 건 힘들어요. 저는 백사장에 앉아 있고 싶어요."}, {"sid": "P5", "name": "한동욱", "text": "물가에 앉아 있는 거면 나도 비슷하긴 한데, 나는 바다 말고 계곡이야."}, {"sid": "P1", "name": "윤태식", "text": "절 마당도 앉아 있기 좋아요."}, {"sid": "P2", "name": "구혜란", "text": "나는 해설 표지판 잘 돼 있는 데가 좋더라."}, {"sid": "P3", "name": "백승철", "text": "능선 코스는 화장실이 중간에 있는지가 중요하죠."}, {"sid": "P4", "name": "정미르", "text": "저는 모래 털 수 있는 샤워대만 있으면 돼요."}, {"sid": "P5", "name": "한동욱", "text": "물만 맑으면 나는 다 좋아요."}, {"sid": "P1", "name": "윤태식", "text": "나는 절 안 가면 서운할 것 같은데."}, {"sid": "P3", "name": "백승철", "text": "저는 안 걸으면 다리가 근질거려서요."}], "speakers": [{"sid": "P1", "name": "윤태식", "query": "조용하고 마음이 가라앉는 오래된 사찰 추천해줘.", "aspects": ["사찰/성지"]}, {"sid": "P2", "name": "구혜란", "query": "옛날 집이나 성곽이 있고 해설 표지판이 잘 되어 있는 곳 추천해줘.", "aspects": ["역사유적", "시설/편의"]}, {"sid": "P3", "name": "백승철", "query": "능선을 따라 반나절 정도 길게 걷기 좋고 화장실 시설이 잘 된 코스 추천해줘.", "aspects": ["트레킹/산책", "시설/편의"]}, {"sid": "P4", "name": "정미르", "query": "파도 소리를 들으며 백사장에 앉아 쉴 수 있고 샤워 시설이 있는 바다 추천해줘.", "aspects": ["해변/바다", "시설/편의"]}, {"sid": "P5", "name": "한동욱", "query": "물소리를 들으며 맑은 계곡물에 발을 담글 수 있는 곳 추천해줘.", "aspects": ["계곡/강"]}], "methods": {"embed": [{"rank": 1, "spot": "소양강댐", "least": 0.846, "avg": 0.888, "nash": -0.601, "why": {"sentence": "이곳은 댐 정상을 따라 걷는 산책길이 있고 웅장한 소양호를 감상할 수 있어, 산책을 즐기거나 강 주변의 경관을 보고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.843, "P2": 0.932, "P3": 0.949, "P4": 0.844, "P5": 0.951}, "matched": [{"name": "구혜란", "aspects": ["시설/편의"]}, {"name": "백승철", "aspects": ["시설/편의", "트레킹/산책"]}, {"name": "정미르", "aspects": ["시설/편의"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["시설/편의", "트레킹/산책", "계곡/강"]}}, {"rank": 2, "spot": "송지호해안 서낭바위 (강원평화지역 국가지질공원)", "least": 0.584, "avg": 0.81, "nash": -1.111, "why": {"sentence": "전통신앙의 영역인 서낭당이 있는 독특한 암석해안이지만, 사찰이나 계곡, 트레킹 코스 등 참가자분들이 구체적으로 원하시는 조건들을 충족하기에는 부족해요.", "passed": false, "utils": {"P1": 0.872, "P2": 0.63, "P3": 0.772, "P4": 0.891, "P5": 0.884}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["해변/바다", "접근성/교통", "산/숲"]}}, {"rank": 3, "spot": "설악 흔들바위", "least": 0.428, "avg": 0.773, "nash": -1.467, "why": {"sentence": "이곳은 신라시대 의상과 원효대사가 정진했던 계조암 입구에 있어 윤태식 님과 구혜란 님이 관심을 가질 만하며, 소공원에서 울산바위까지 이어지는 코스라 백승철 님이 원하시는 산책을 즐기기에도 좋아요.", "passed": true, "utils": {"P1": 0.953, "P2": 0.948, "P3": 0.155, "P4": 0.751, "P5": 0.884}, "matched": [{"name": "윤태식", "aspects": ["사찰/성지"]}, {"name": "구혜란", "aspects": ["역사유적"]}], "top_cats": ["사찰/성지", "역사유적", "서비스/친절"]}}, {"rank": 4, "spot": "계조암(속초)", "least": 0.383, "avg": 0.755, "nash": -1.64, "why": {"sentence": "이곳은 유서 깊은 사찰이자 유명 스님들이 수도했던 곳이라 조용한 사찰을 찾는 윤태식 님과 역사적인 장소를 원하는 구혜란 님께 잘 맞아요. 또한 울산바위로 향하는 최단 등산 코스에 포함되어 있어 산책을 즐기려는 백승철 님께도 추천할 만한 곳이에요.", "passed": true, "utils": {"P1": 0.994, "P2": 0.891, "P3": 0.088, "P4": 0.752, "P5": 0.849}, "matched": [{"name": "윤태식", "aspects": ["사찰/성지"]}], "top_cats": ["접근성/교통", "사찰/성지", "서비스/친절"]}}, {"rank": 5, "spot": "보현사(강릉)", "least": 0.406, "avg": 0.751, "nash": -1.622, "why": {"sentence": "이곳은 조선 초기의 건축 양식을 간직한 영동 지방에서 가장 오래된 절로, 산사의 그윽한 정취를 느낄 수 있어 조용한 사찰과 역사 유적을 원하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.382, "P2": 0.883, "P3": 0.692, "P4": 0.793, "P5": 0.981}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["산/숲", "계곡/강", "해변/바다"]}}, {"rank": 6, "spot": "허균·허난설헌 기념공원", "least": 0.341, "avg": 0.751, "nash": -1.718, "why": {"sentence": "허난설헌 생가 터와 기념관 등 역사적 장소로 구성되어 있어, 바다나 계곡, 사찰 등을 원하는 분들의 요청을 모두 충족하기 어렵습니다.", "passed": false, "utils": {"P1": 0.84, "P2": 0.367, "P3": 0.91, "P4": 0.809, "P5": 0.848}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}, {"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["접근성/교통", "트레킹/산책", "해변/바다"]}}, {"rank": 7, "spot": "태백산 국립공원", "least": 0.41, "avg": 0.745, "nash": -1.654, "why": {"sentence": "이곳은 국가민속문화유산인 천제단을 비롯한 역사·문화적 가치가 높은 곳이자, 여름에는 깨끗한 계곡물이 흐르는 곳이라 역사와 자연을 모두 즐기고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.91, "P2": 0.895, "P3": 0.128, "P4": 0.752, "P5": 0.848}, "matched": [{"name": "윤태식", "aspects": ["사찰/성지"]}, {"name": "구혜란", "aspects": ["역사유적"]}], "top_cats": ["서비스/친절", "사찰/성지", "역사유적"]}}, {"rank": 8, "spot": "등명낙가사(강릉)", "least": 0.407, "avg": 0.742, "nash": -1.669, "why": {"sentence": "이곳은 고려 시대에 건립된 것으로 추정되는 석탑과 여러 불상이 있는 사찰이라, 조용한 사찰과 역사 유적을 원하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.382, "P2": 0.891, "P3": 0.736, "P4": 0.887, "P5": 0.799}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["접근성/교통", "해변/바다", "산/숲"]}}, {"rank": 9, "spot": "소금강오토캠프장", "least": 0.443, "avg": 0.734, "nash": -1.679, "why": {"sentence": "이곳은 맑은 소금강계곡에서 물놀이를 즐길 수 있고 국립공원 내 캠핑장이라 관리가 잘 되어 있어, 계곡을 원하시는 한동욱 님과 시설 편의를 중요하게 생각하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.841, "P2": 0.81, "P3": 0.777, "P4": 0.775, "P5": 0.461}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}, {"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "피크닉"]}}, {"rank": 10, "spot": "부남해변", "least": 0.407, "avg": 0.72, "nash": -1.823, "why": {"sentence": "물이 맑고 잔잔한 해변이라 정미르 님께는 잘 맞을 수 있지만, 사찰이나 역사 유적, 트레킹 코스, 계곡을 원하는 다른 분들의 요청을 충족할 만한 정보가 없습니다.", "passed": false, "utils": {"P1": 0.805, "P2": 0.815, "P3": 0.898, "P4": 0.4, "P5": 0.72}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}], "top_cats": ["트레킹/산책", "산/숲"]}}], "nash": [{"rank": 1, "spot": "소양강댐", "least": 0.843, "avg": 0.904, "nash": -0.514, "why": {"sentence": "이곳은 댐 정상을 따라 걷는 산책길이 있고 웅장한 소양호를 감상할 수 있어, 산책을 즐기거나 강 주변의 경관을 보고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.843, "P2": 0.932, "P3": 0.949, "P4": 0.844, "P5": 0.951}, "matched": [{"name": "구혜란", "aspects": ["시설/편의"]}, {"name": "백승철", "aspects": ["시설/편의", "트레킹/산책"]}, {"name": "정미르", "aspects": ["시설/편의"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["시설/편의", "트레킹/산책", "계곡/강"]}}, {"rank": 2, "spot": "송지호해안 서낭바위 (강원평화지역 국가지질공원)", "least": 0.63, "avg": 0.81, "nash": -1.097, "why": {"sentence": "전통신앙의 영역인 서낭당이 있는 독특한 암석해안이지만, 사찰이나 계곡, 트레킹 코스 등 참가자분들이 구체적으로 원하시는 조건들을 충족하기에는 부족해요.", "passed": false, "utils": {"P1": 0.872, "P2": 0.63, "P3": 0.772, "P4": 0.891, "P5": 0.884}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["해변/바다", "접근성/교통", "산/숲"]}}, {"rank": 3, "spot": "허균·허난설헌 기념공원", "least": 0.367, "avg": 0.755, "nash": -1.648, "why": {"sentence": "허난설헌 생가 터와 기념관 등 역사적 장소로 구성되어 있어, 바다나 계곡, 사찰 등을 원하는 분들의 요청을 모두 충족하기 어렵습니다.", "passed": false, "utils": {"P1": 0.84, "P2": 0.367, "P3": 0.91, "P4": 0.809, "P5": 0.848}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}, {"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["접근성/교통", "트레킹/산책", "해변/바다"]}}, {"rank": 4, "spot": "소금강오토캠프장", "least": 0.461, "avg": 0.733, "nash": -1.665, "why": {"sentence": "이곳은 맑은 소금강계곡에서 물놀이를 즐길 수 있고 국립공원 내 캠핑장이라 관리가 잘 되어 있어, 계곡을 원하시는 한동욱 님과 시설 편의를 중요하게 생각하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.841, "P2": 0.81, "P3": 0.777, "P4": 0.775, "P5": 0.461}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}, {"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "피크닉"]}}, {"rank": 5, "spot": "보현사(강릉)", "least": 0.382, "avg": 0.746, "nash": -1.708, "why": {"sentence": "이곳은 조선 초기의 건축 양식을 간직한 영동 지방에서 가장 오래된 절로, 산사의 그윽한 정취를 느낄 수 있어 조용한 사찰과 역사 유적을 원하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.382, "P2": 0.883, "P3": 0.692, "P4": 0.793, "P5": 0.981}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["산/숲", "계곡/강", "해변/바다"]}}, {"rank": 6, "spot": "등명낙가사(강릉)", "least": 0.382, "avg": 0.739, "nash": -1.728, "why": {"sentence": "이곳은 고려 시대에 건립된 것으로 추정되는 석탑과 여러 불상이 있는 사찰이라, 조용한 사찰과 역사 유적을 원하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.382, "P2": 0.891, "P3": 0.736, "P4": 0.887, "P5": 0.799}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["접근성/교통", "해변/바다", "산/숲"]}}, {"rank": 7, "spot": "부남해변", "least": 0.4, "avg": 0.728, "nash": -1.774, "why": {"sentence": "물이 맑고 잔잔한 해변이라 정미르 님께는 잘 맞을 수 있지만, 사찰이나 역사 유적, 트레킹 코스, 계곡을 원하는 다른 분들의 요청을 충족할 만한 정보가 없습니다.", "passed": false, "utils": {"P1": 0.805, "P2": 0.815, "P3": 0.898, "P4": 0.4, "P5": 0.72}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}], "top_cats": ["트레킹/산책", "산/숲"]}}, {"rank": 8, "spot": "양양 진전사지 삼층석탑", "least": 0.503, "avg": 0.709, "nash": -1.844, "why": {"sentence": "통일신라시대의 석탑과 절터에 대한 설명만 있을 뿐, 트레킹 코스나 바다, 계곡 등 다른 분들이 원하는 시설이나 환경에 대한 정보가 없습니다.", "passed": false, "utils": {"P1": 0.503, "P2": 0.558, "P3": 0.763, "P4": 0.819, "P5": 0.902}, "matched": [{"name": "구혜란", "aspects": ["시설/편의"]}, {"name": "백승철", "aspects": ["시설/편의"]}, {"name": "정미르", "aspects": ["시설/편의"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["시설/편의", "산/숲", "계곡/강"]}}, {"rank": 9, "spot": "수목화송정마을오토캠핑장", "least": 0.431, "avg": 0.703, "nash": -1.917, "why": {"sentence": "건봉사나 거진항 같은 주변 명소는 있지만, 캠핑장 자체는 마을 체험시설과 생태탐방로가 있는 곳이라 모든 분의 다양한 선호를 충족하기에는 부족해요.", "passed": false, "utils": {"P1": 0.869, "P2": 0.881, "P3": 0.69, "P4": 0.431, "P5": 0.646}, "matched": [{"name": "윤태식", "aspects": ["사찰/성지"]}, {"name": "구혜란", "aspects": ["역사유적"]}, {"name": "백승철", "aspects": ["트레킹/산책"]}], "top_cats": ["트레킹/산책", "역사유적", "사찰/성지"]}}, {"rank": 10, "spot": "강원종합박물관", "least": 0.488, "avg": 0.685, "nash": -1.988, "why": {"sentence": "다양한 유물을 전시하고 있지만, 요청하신 사찰, 해변, 계곡이나 트레킹 코스에 대한 정보는 포함되어 있지 않아요.", "passed": false, "utils": {"P1": 0.767, "P2": 0.488, "P3": 0.58, "P4": 0.746, "P5": 0.847}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["산/숲", "계곡/강", "해변/바다"]}}, {"rank": 11, "spot": "정동진해변", "least": 0.326, "avg": 0.705, "nash": -2.041, "why": {"sentence": "정동진해변은 해변과 바다를 즐기기에 좋지만, 사찰이나 역사유적, 계곡을 원하는 다른 분들의 요청을 충족할 만한 정보가 소개에 없습니다.", "passed": false}}, {"rank": 12, "spot": "삼척 죽서루", "least": 0.355, "avg": 0.657, "nash": -2.355, "why": {"sentence": "조선 시대에 중창된 역사적인 누각이지만, 사찰이나 바다, 계곡 등 참가자들이 원하는 구체적인 활동을 제공한다는 내용이 없습니다.", "passed": false}}, {"rank": 13, "spot": "설악 흔들바위", "least": 0.155, "avg": 0.738, "nash": -2.376, "why": {"sentence": "이곳은 신라시대 의상과 원효대사가 정진했던 계조암 입구에 있어 윤태식 님과 구혜란 님이 관심을 가질 만하며, 소공원에서 울산바위까지 이어지는 코스라 백승철 님이 원하시는 산책을 즐기기에도 좋아요.", "passed": true}}, {"rank": 14, "spot": "소양강댐 물 문화관", "least": 0.266, "avg": 0.663, "nash": -2.505, "why": {"sentence": "소양강댐의 역사와 수몰된 마을을 전시하는 곳이라, 사찰이나 바다, 계곡 등 각 참가자가 원하는 구체적인 활동을 즐기기에는 어려워 보여요.", "passed": false}}, {"rank": 15, "spot": "태백산 국립공원", "least": 0.128, "avg": 0.706, "nash": -2.712, "why": {"sentence": "이곳은 국가민속문화유산인 천제단을 비롯한 역사·문화적 가치가 높은 곳이자, 여름에는 깨끗한 계곡물이 흐르는 곳이라 역사와 자연을 모두 즐기고 싶은 분들께 잘 맞아요.", "passed": true}}, {"rank": 16, "spot": "계조암(속초)", "least": 0.088, "avg": 0.715, "nash": -3.003, "why": {"sentence": "이곳은 유서 깊은 사찰이자 유명 스님들이 수도했던 곳이라 조용한 사찰을 찾는 윤태식 님과 역사적인 장소를 원하는 구혜란 님께 잘 맞아요. 또한 울산바위로 향하는 최단 등산 코스에 포함되어 있어 산책을 즐기려는 백승철 님께도 추천할 만한 곳이에요.", "passed": true}}, {"rank": 17, "spot": "휴휴암(강원)", "least": 0.318, "avg": 0.575, "nash": -3.103, "why": {"sentence": "이곳은 바닷가에 자리한 암자로 기이한 바위와 관세음보살 형상의 바위가 있어 경치가 빼어나며, 일상의 번뇌를 내려놓고 쉬기 좋은 곳이라 사찰을 찾는 분들께 잘 맞아요.", "passed": true}}, {"rank": 18, "spot": "감추사", "least": 0.345, "avg": 0.585, "nash": -3.136, "why": {"sentence": "이곳은 바닷가에 위치한 작은 절로, 역사적인 석탑과 멋진 절경을 갖추고 있어 사찰과 역사 유적을 선호하시는 분들께 잘 맞아요.", "passed": true}}, {"rank": 19, "spot": "(주)척산온천휴양촌", "least": 0.205, "avg": 0.584, "nash": -3.207, "why": {"sentence": "소개된 장소는 온천과 산책로 중심의 휴양 시설이라 사찰, 역사 유적, 바다, 계곡을 원하는 분들의 개별 선호와는 맞지 않아요.", "passed": false}}, {"rank": 20, "spot": "소돌아들바위공원", "least": 0.283, "avg": 0.55, "nash": -3.522, "why": {"sentence": "기암 괴석과 전설이 있는 바위들을 볼 수 있는 곳이지만, 사찰, 역사 유적, 트레킹 코스, 백사장, 계곡 등 참가자분들이 각각 원하는 조건에 부합하는 정보가 소개글에 없습니다.", "passed": false}}, {"rank": 21, "spot": "무릉계곡", "least": 0.176, "avg": 0.558, "nash": -3.553, "why": {"sentence": "이곳은 맑은 계곡과 폭포 등 볼거리가 다양한 곳이라, 물소리를 들으며 계곡물에 발을 담그고 싶어 하는 한동욱 님께 잘 맞아요.", "passed": true}}, {"rank": 22, "spot": "국립미천골자연휴양림", "least": 0.144, "avg": 0.599, "nash": -3.596, "why": {"sentence": "이곳은 맑은 물과 폭포가 흐르는 미천골 계곡을 따라 조성되어 있어 물소리를 즐기려는 분들께 좋고, 선림원지와 같은 문화 유적 탐방도 가능해 다양한 취향을 가진 분들께 잘 맞아요.", "passed": true}}, {"rank": 23, "spot": "화암사(고성)", "least": 0.1, "avg": 0.615, "nash": -3.748, "why": {"sentence": "이곳은 신라 시대에 창건된 유서 깊은 사찰로, 조용하게 마음을 가라앉히고 싶은 분이나 역사적인 흔적을 보고 싶은 분들께 잘 맞아요. 수려한 경관과 함께 전통 찻집에서 여유를 즐길 수도 있어 사찰을 선호하는 분들께 추천드려요.", "passed": true}}, {"rank": 24, "spot": "경포가시연습지", "least": 0.05, "avg": 0.659, "nash": -3.851, "why": {"sentence": "경포호수를 낀 산책로가 있어 걷기 좋지만, 사찰, 역사유적, 바다, 계곡 등 다른 분들이 원하는 구체적인 조건들을 충족하지 못해요.", "passed": false}}, {"rank": 25, "spot": "설악산 국립공원(외설악)", "least": 0.081, "avg": 0.611, "nash": -3.882, "why": {"sentence": "장소 소개에 사찰, 역사 유적, 트레킹 코스, 해변, 계곡에 대한 구체적인 정보가 포함되어 있지 않아 각 참가자의 선호도를 충족하는지 확인할 수 없습니다.", "passed": false}}, {"rank": 26, "spot": "수타사 농촌테마공원", "least": 0.01, "avg": 0.73, "nash": -4.987, "why": {"sentence": "수변자연경관과 휴식공간이 있는 테마공원이지만, 사찰, 역사유적, 트레킹 코스, 바다, 계곡 등 참가자분들이 구체적으로 원하는 요소가 소개글에 나타나 있지 않아요.", "passed": false}}, {"rank": 27, "spot": "양양 오색리 삼층석탑", "least": 0.01, "avg": 0.728, "nash": -5.002, "why": {"sentence": "역사적인 석탑이지만, 물놀이나 해변, 트레킹 코스 등 다른 참가자분들이 원하는 활동을 할 수 있는 정보가 소개에 없어요.", "passed": false}}, {"rank": 28, "spot": "라디오스타박물관", "least": 0.01, "avg": 0.707, "nash": -5.126, "why": {"sentence": "라디오의 역사를 배우고 체험하는 곳이라 사찰, 역사유적, 트레킹, 바다, 계곡을 원하는 분들의 요청과는 맞지 않아요.", "passed": false}}, {"rank": 29, "spot": "묵호항", "least": 0.01, "avg": 0.694, "nash": -5.187, "why": {"sentence": "묵호항은 바다 조망과 등대, 어시장 등이 있는 곳이지만 사찰, 역사유적, 트레킹 코스, 계곡 등 참가자분들이 원하는 구체적인 조건들을 충족하기에는 부족해요.", "passed": false}}, {"rank": 30, "spot": "오산리선사유적박물관", "least": 0.01, "avg": 0.693, "nash": -5.217, "why": {"sentence": "신석기 유적과 움집 등을 볼 수 있어 구혜란 님께는 맞을 수 있지만, 사찰이나 바다, 계곡 등 다른 분들의 선호 사항을 충족할 만한 정보가 없습니다.", "passed": false}}, {"rank": 31, "spot": "평창 오대산사고", "least": 0.01, "avg": 0.688, "nash": -5.251, "why": {"sentence": "이곳은 조선 후기의 사고지이자 수호사찰이었던 영감사가 있던 곳으로, 사시사철 푸른 침엽수에 둘러싸여 고즈넉한 아름다움을 띠고 있어 사찰과 역사 유적을 원하는 분들께 잘 맞아요.", "passed": true}}, {"rank": 32, "spot": "춘천시 수변공원", "least": 0.01, "avg": 0.683, "nash": -5.255, "why": {"sentence": "수변 산책로와 자전거 길은 있지만, 사찰, 역사유적, 바다, 계곡 등 참가자들이 원하는 구체적인 장소 조건들을 충족하지 못해요.", "passed": false}}, {"rank": 33, "spot": "용연사(강릉)", "least": 0.01, "avg": 0.681, "nash": -5.31, "why": {"sentence": "이곳은 아늑한 산중에 자리하여 조용한 분위기를 지닌 사찰이라, 조용하고 마음이 가라앉는 사찰을 원하는 윤태식 님께 잘 맞아요.", "passed": true}}, {"rank": 34, "spot": "석조보살좌상", "least": 0.01, "avg": 0.672, "nash": -5.354, "why": {"sentence": "고려시대 불교사상을 밝힐 수 있는 귀중한 자료이지만, 그룹원들이 원하는 사찰, 역사유적, 트레킹, 바다, 계곡 등의 구체적인 활동을 충족할 만한 정보가 부족합니다.", "passed": false}}, {"rank": 35, "spot": "현덕사(강릉)", "least": 0.01, "avg": 0.663, "nash": -5.413, "why": {"sentence": "현덕사는 사찰이지만, 역사 유적이나 해설 표지판, 트레킹 코스, 바다, 계곡 등 다른 참가자분들이 원하는 조건에 대한 정보가 소개에 없습니다.", "passed": false}}, {"rank": 36, "spot": "우니메이카", "least": 0.01, "avg": 0.653, "nash": -5.447, "why": {"sentence": "우니메이카는 조용한 캠핑장이며, 참가자들이 원하는 사찰, 역사유적, 트레킹 코스, 해변, 계곡 등의 구체적인 특징을 갖추고 있다는 설명이 없습니다.", "passed": false}}, {"rank": 37, "spot": "이상원미술관", "least": 0.01, "avg": 0.652, "nash": -5.465, "why": {"sentence": "미술관과 체험공방 위주의 시설이라 사찰, 역사유적, 해변, 계곡 등 각 참가자가 원하는 장소의 특성과는 맞지 않아요.", "passed": false}}, {"rank": 38, "spot": "태백 고생대 자연사박물관", "least": 0.01, "avg": 0.652, "nash": -5.468, "why": {"sentence": "사찰, 역사유적, 트레킹 코스, 바다, 계곡 등 참가자분들이 선호하는 요소가 장소 소개에 포함되어 있지 않아요.", "passed": false}}, {"rank": 39, "spot": "만해문학박물관", "least": 0.01, "avg": 0.655, "nash": -5.483, "why": {"sentence": "이곳은 만해 한용운 선생의 유품과 문학 작품을 감상할 수 있고 사찰 체험이 가능한 서원보전도 있어, 역사 유적과 사찰을 선호하시는 분들께 잘 맞아요.", "passed": true}}, {"rank": 40, "spot": "미시령계곡", "least": 0.01, "avg": 0.621, "nash": -5.66, "why": {"sentence": "이곳은 바닥이 훤히 보일 정도로 맑은 계곡물과 물놀이하며 쉴 수 있는 너럭바위가 있어, 물소리를 들으며 계곡물에 발을 담그고 싶어 하는 한동욱 님께 잘 맞아요.", "passed": true}}, {"rank": 41, "spot": "영월 무릉리 마애여래좌상", "least": 0.01, "avg": 0.625, "nash": -5.661, "why": {"sentence": "이곳은 고요한 불상의 멋을 즐길 수 있는 마애상과 아름다운 계곡이 어우러진 곳이라, 사찰의 분위기를 원하는 분이나 시원한 강물을 보고 싶은 분들께 잘 맞아요.", "passed": true}}, {"rank": 42, "spot": "요선암 돌개구멍 (강원고생대 국가지질공원)", "least": 0.01, "avg": 0.624, "nash": -5.675, "why": {"sentence": "하천이 흐르며 만들어진 독특한 지형을 볼 수 있는 곳이지만, 사찰이나 역사 유적, 해변, 혹은 걷기 좋은 능선 코스 등 참가자분들이 원하는 조건에 부합하는 정보가 없습니다.", "passed": false}}, {"rank": 43, "spot": "오대산 자연명상마을", "least": 0.01, "avg": 0.628, "nash": -5.702, "why": {"sentence": "명상을 테마로 한 휴식 공간이라 바다나 계곡을 원하는 분들께는 맞지 않아요.", "passed": false}}, {"rank": 44, "spot": "문우당서림", "least": 0.01, "avg": 0.612, "nash": -5.711, "why": {"sentence": "문우당서림은 다양한 분야의 책을 갖춘 서점이지만, 사찰, 역사유적, 트레킹 코스, 바다, 계곡을 원하는 분들의 요청을 충족할 만한 정보가 없습니다.", "passed": false}}, {"rank": 45, "spot": "철원승일공원", "least": 0.01, "avg": 0.618, "nash": -5.758, "why": {"sentence": "이곳은 한탄강의 풍경을 한눈에 볼 수 있는 승일정과 승일교까지 이어지는 탐방로가 있어, 강 풍경을 즐기며 걷고 싶어 하는 분들께 잘 맞아요.", "passed": true}}, {"rank": 46, "spot": "대관령박물관", "least": 0.01, "avg": 0.614, "nash": -5.764, "why": {"sentence": "역사의 향기와 유물을 볼 수 있는 곳이지만, 사찰이나 바다, 계곡 등 참가자분들이 개별적으로 원하는 구체적인 장소 조건에는 부합하지 않아요.", "passed": false}}, {"rank": 47, "spot": "오대산 자연명상마을 옴뷔", "least": 0.01, "avg": 0.623, "nash": -5.766, "why": {"sentence": "정원과 숲길 산책은 가능하지만, 사찰이나 역사 유적, 바다, 계곡 등 다른 참가자분들이 원하는 핵심 요소들이 장소 소개에 포함되어 있지 않아요.", "passed": false}}, {"rank": 48, "spot": "금강굴", "least": 0.01, "avg": 0.632, "nash": -5.834, "why": {"sentence": "이곳은 신라시대 고승이 수도하던 암자이자 천불동계곡의 경관을 볼 수 있는 곳이라, 사찰과 계곡을 원하는 분들께 잘 맞아요. 또한 소공원에서 금강굴까지 걷는 코스가 있어 산책을 원하는 분들께도 추천할 만해요.", "passed": true}}, {"rank": 49, "spot": "치악산 금강송", "least": 0.01, "avg": 0.628, "nash": -5.949, "why": {"sentence": "조선 시대부터 관리해 온 웅장한 소나무 숲이지만, 사찰이나 역사 유적, 트레킹 코스, 바다, 계곡 등 참가자들이 원하는 구체적인 요소에 대한 설명이 부족합니다.", "passed": false}}, {"rank": 50, "spot": "소양호 유람선", "least": 0.01, "avg": 0.596, "nash": -5.95, "why": {"sentence": "소양호는 내륙의 바다라 불리는 큰 호수이지만, 사찰, 역사유적, 트레킹 코스, 해변, 계곡물에 발을 담그는 등의 개별 요청을 모두 충족할 만한 구체적인 정보가 부족합니다.", "passed": false}}], "llm": [{"rank": 1, "spot": "소양강댐", "least": 0.843, "avg": 0.904, "nash": -0.514, "why": {"sentence": "이곳은 댐 정상을 따라 걷는 산책길이 있고 웅장한 소양호를 감상할 수 있어, 산책을 즐기거나 강 주변의 경관을 보고 싶은 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.843, "P2": 0.932, "P3": 0.949, "P4": 0.844, "P5": 0.951}, "matched": [{"name": "구혜란", "aspects": ["시설/편의"]}, {"name": "백승철", "aspects": ["시설/편의", "트레킹/산책"]}, {"name": "정미르", "aspects": ["시설/편의"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["시설/편의", "트레킹/산책", "계곡/강"]}}, {"rank": 2, "spot": "소금강오토캠프장", "least": 0.461, "avg": 0.733, "nash": -1.665, "why": {"sentence": "이곳은 맑은 소금강계곡에서 물놀이를 즐길 수 있고 국립공원 내 캠핑장이라 관리가 잘 되어 있어, 계곡을 원하시는 한동욱 님과 시설 편의를 중요하게 생각하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.841, "P2": 0.81, "P3": 0.777, "P4": 0.775, "P5": 0.461}, "matched": [{"name": "백승철", "aspects": ["트레킹/산책"]}, {"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["트레킹/산책", "해변/바다", "피크닉"]}}, {"rank": 3, "spot": "보현사(강릉)", "least": 0.382, "avg": 0.746, "nash": -1.708, "why": {"sentence": "이곳은 조선 초기의 건축 양식을 간직한 영동 지방에서 가장 오래된 절로, 산사의 그윽한 정취를 느낄 수 있어 조용한 사찰과 역사 유적을 원하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.382, "P2": 0.883, "P3": 0.692, "P4": 0.793, "P5": 0.981}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}, {"name": "한동욱", "aspects": ["계곡/강"]}], "top_cats": ["산/숲", "계곡/강", "해변/바다"]}}, {"rank": 4, "spot": "등명낙가사(강릉)", "least": 0.382, "avg": 0.739, "nash": -1.728, "why": {"sentence": "이곳은 고려 시대에 건립된 것으로 추정되는 석탑과 여러 불상이 있는 사찰이라, 조용한 사찰과 역사 유적을 원하시는 분들께 잘 맞아요.", "passed": true, "utils": {"P1": 0.382, "P2": 0.891, "P3": 0.736, "P4": 0.887, "P5": 0.799}, "matched": [{"name": "정미르", "aspects": ["해변/바다"]}], "top_cats": ["접근성/교통", "해변/바다", "산/숲"]}}, {"rank": 5, "spot": "설악 흔들바위", "least": 0.155, "avg": 0.738, "nash": -2.376, "why": {"sentence": "이곳은 신라시대 의상과 원효대사가 정진했던 계조암 입구에 있어 윤태식 님과 구혜란 님이 관심을 가질 만하며, 소공원에서 울산바위까지 이어지는 코스라 백승철 님이 원하시는 산책을 즐기기에도 좋아요.", "passed": true}}, {"rank": 6, "spot": "태백산 국립공원", "least": 0.128, "avg": 0.706, "nash": -2.712, "why": {"sentence": "이곳은 국가민속문화유산인 천제단을 비롯한 역사·문화적 가치가 높은 곳이자, 여름에는 깨끗한 계곡물이 흐르는 곳이라 역사와 자연을 모두 즐기고 싶은 분들께 잘 맞아요.", "passed": true}}, {"rank": 7, "spot": "계조암(속초)", "least": 0.088, "avg": 0.715, "nash": -3.003, "why": {"sentence": "이곳은 유서 깊은 사찰이자 유명 스님들이 수도했던 곳이라 조용한 사찰을 찾는 윤태식 님과 역사적인 장소를 원하는 구혜란 님께 잘 맞아요. 또한 울산바위로 향하는 최단 등산 코스에 포함되어 있어 산책을 즐기려는 백승철 님께도 추천할 만한 곳이에요.", "passed": true}}, {"rank": 8, "spot": "휴휴암(강원)", "least": 0.318, "avg": 0.575, "nash": -3.103, "why": {"sentence": "이곳은 바닷가에 자리한 암자로 기이한 바위와 관세음보살 형상의 바위가 있어 경치가 빼어나며, 일상의 번뇌를 내려놓고 쉬기 좋은 곳이라 사찰을 찾는 분들께 잘 맞아요.", "passed": true}}, {"rank": 9, "spot": "감추사", "least": 0.345, "avg": 0.585, "nash": -3.136, "why": {"sentence": "이곳은 바닷가에 위치한 작은 절로, 역사적인 석탑과 멋진 절경을 갖추고 있어 사찰과 역사 유적을 선호하시는 분들께 잘 맞아요.", "passed": true}}, {"rank": 10, "spot": "무릉계곡", "least": 0.176, "avg": 0.558, "nash": -3.553, "why": {"sentence": "이곳은 맑은 계곡과 폭포 등 볼거리가 다양한 곳이라, 물소리를 들으며 계곡물에 발을 담그고 싶어 하는 한동욱 님께 잘 맞아요.", "passed": true}}, {"rank": 11, "spot": "국립미천골자연휴양림", "least": 0.144, "avg": 0.599, "nash": -3.596, "why": {"sentence": "이곳은 맑은 물과 폭포가 흐르는 미천골 계곡을 따라 조성되어 있어 물소리를 즐기려는 분들께 좋고, 선림원지와 같은 문화 유적 탐방도 가능해 다양한 취향을 가진 분들께 잘 맞아요.", "passed": true}}, {"rank": 12, "spot": "화암사(고성)", "least": 0.1, "avg": 0.615, "nash": -3.748, "why": {"sentence": "이곳은 신라 시대에 창건된 유서 깊은 사찰로, 조용하게 마음을 가라앉히고 싶은 분이나 역사적인 흔적을 보고 싶은 분들께 잘 맞아요. 수려한 경관과 함께 전통 찻집에서 여유를 즐길 수도 있어 사찰을 선호하는 분들께 추천드려요.", "passed": true}}, {"rank": 13, "spot": "평창 오대산사고", "least": 0.01, "avg": 0.688, "nash": -5.251, "why": {"sentence": "이곳은 조선 후기의 사고지이자 수호사찰이었던 영감사가 있던 곳으로, 사시사철 푸른 침엽수에 둘러싸여 고즈넉한 아름다움을 띠고 있어 사찰과 역사 유적을 원하는 분들께 잘 맞아요.", "passed": true}}, {"rank": 14, "spot": "용연사(강릉)", "least": 0.01, "avg": 0.681, "nash": -5.31, "why": {"sentence": "이곳은 아늑한 산중에 자리하여 조용한 분위기를 지닌 사찰이라, 조용하고 마음이 가라앉는 사찰을 원하는 윤태식 님께 잘 맞아요.", "passed": true}}, {"rank": 15, "spot": "만해문학박물관", "least": 0.01, "avg": 0.655, "nash": -5.483, "why": {"sentence": "이곳은 만해 한용운 선생의 유품과 문학 작품을 감상할 수 있고 사찰 체험이 가능한 서원보전도 있어, 역사 유적과 사찰을 선호하시는 분들께 잘 맞아요.", "passed": true}}, {"rank": 16, "spot": "미시령계곡", "least": 0.01, "avg": 0.621, "nash": -5.66, "why": {"sentence": "이곳은 바닥이 훤히 보일 정도로 맑은 계곡물과 물놀이하며 쉴 수 있는 너럭바위가 있어, 물소리를 들으며 계곡물에 발을 담그고 싶어 하는 한동욱 님께 잘 맞아요.", "passed": true}}, {"rank": 17, "spot": "영월 무릉리 마애여래좌상", "least": 0.01, "avg": 0.625, "nash": -5.661, "why": {"sentence": "이곳은 고요한 불상의 멋을 즐길 수 있는 마애상과 아름다운 계곡이 어우러진 곳이라, 사찰의 분위기를 원하는 분이나 시원한 강물을 보고 싶은 분들께 잘 맞아요.", "passed": true}}, {"rank": 18, "spot": "철원승일공원", "least": 0.01, "avg": 0.618, "nash": -5.758, "why": {"sentence": "이곳은 한탄강의 풍경을 한눈에 볼 수 있는 승일정과 승일교까지 이어지는 탐방로가 있어, 강 풍경을 즐기며 걷고 싶어 하는 분들께 잘 맞아요.", "passed": true}}, {"rank": 19, "spot": "금강굴", "least": 0.01, "avg": 0.632, "nash": -5.834, "why": {"sentence": "이곳은 신라시대 고승이 수도하던 암자이자 천불동계곡의 경관을 볼 수 있는 곳이라, 사찰과 계곡을 원하는 분들께 잘 맞아요. 또한 소공원에서 금강굴까지 걷는 코스가 있어 산책을 원하는 분들께도 추천할 만해요.", "passed": true}}]}}]}, "METHODS": ["embed", "nash", "llm"], "METHOD_LABELS": {"embed": "① 임베딩", "nash": "② 임베딩→Nash", "llm": "③ 임베딩→Nash→LLM"}, "FINAL_SIZE": 10, "DISPLAY_K": 10};
+const {DATA,METHODS,METHOD_LABELS:ML,FINAL_SIZE,DISPLAY_K}=P;
+const $=id=>document.getElementById(id);
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function opt(sel,vals,labels){sel.innerHTML=vals.map(v=>`<option value="${v}">${labels?labels[v]||v:v}</option>`).join('');}
+const heat=(n,mx)=>{if(!n)return'#fff';const t=Math.min(1,n/mx);const r=Math.round(255-(255-76)*t),g=Math.round(255-(255-114)*t),b=Math.round(255-(255-176)*t);return`rgb(${r},${g},${b})`;};
+
+const regions=Object.keys(DATA);
+opt($('region'),regions);
+
+function curDia(){return DATA[$('region').value].find(d=>d.id===$('dialogue').value);}
+function fillDialogues(){const ds=DATA[$('region').value];opt($('dialogue'),ds.map(d=>d.id));render();}
+
+function tipHtml(x,showPass){
+ const w=x.why||{};
+ if(w.partial) return `<b style="color:#ffd27f">◐ 부분충족 ${w.partial.m}/${w.partial.n}</b><br>${esc(w.sentence)||''}`;
+ if(showPass&&w.passed===true) return `<b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc(w.sentence)||'추천 이유 정보 없음'}`;
+ if(showPass&&w.passed===false) return `<b style="color:#ff9a9a">✘ LLM 검수 탈락</b><br>${esc(w.sentence)||'근거 부족/부적합'}`;
+ return esc(w.sentence)||'추천 이유 정보 없음';
+}
+
+function render(){
+ const d=curDia();if(!d)return;
+ $('meta').textContent=`${d.id} · ${d.type||''} · ${d.group_size}명`;
+ $('gq').innerHTML=`<b>${esc(d.group_query||'')}</b><br>`+
+   ((d.key_aspects&&d.key_aspects.length)?`<div style="margin-top:6px">핵심: `+d.key_aspects.map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`:'');
+ $('transcript').innerHTML=(d.transcript||[]).map(t=>
+   `<div class="turn"><div class="who">${esc(t.name||t.sid)}</div><div class="utt">${esc(t.text)}</div></div>`).join('')||'<span class="badge">원문 없음</span>';
+ $('speakers').innerHTML=(d.speakers||[]).map(s=>
+   `<div class="spk"><div class="nm">${esc(s.name)} <span class="badge">${esc(s.sid)}</span></div>`+
+   `<div class="q">"${esc(s.query)}"</div>`+
+   (s.aspects||[]).map(a=>`<span class="tag">${esc(a)}</span>`).join('')+`</div>`).join('');
+
+ // 데이터가 있는 단계만 컬럼 표시
+ const present=METHODS.filter(m=>(d.methods[m]||[]).length);
+ const cnt={};
+ present.forEach(m=>{(d.methods[m]||[]).slice(0,DISPLAY_K).forEach(x=>{cnt[x.spot]=(cnt[x.spot]||0)+1;});});
+ const mxc=Math.max(1,...Object.values(cnt));
+ $('topk').innerHTML=present.map(m=>{
+   const showPass=(m!=='embed');
+   const spots=(d.methods[m]||[]).slice(0,DISPLAY_K);
+   return `<div class="col"><h3>${ML[m]}</h3>`+
+     spots.map(x=>`<div class="spot" style="background:${heat(cnt[x.spot],mxc)};${cnt[x.spot]>=3?'color:#fff':''}">`+
+       `<span class="rk">${x.rank}</span><span class="nm">${esc(x.spot)}</span><div class="tip">${tipHtml(x,showPass)}</div></div>`).join('')+`</div>`;
+ }).join('')||'<span class="badge">데이터 없음</span>';
+
+ renderFinal();
+ renderWhy();
+}
+
+function renderFinal(){
+ const d=curDia();if(!d)return;
+ const rows=(d.methods['llm']||[]);
+ const pick=rows.slice(0,FINAL_SIZE);
+ let h='<div class="finalgrid">';
+ for(let i=0;i<FINAL_SIZE;i++){
+   const x=pick[i];
+   if(x){
+     const pt=(x.why||{}).partial;
+     if(pt){
+       h+=`<div class="slot partial"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)} <span class="badge" style="color:#b8860b">◐ ${pt.m}/${pt.n}</span></span>`+
+          `<div class="tip"><b style="color:#ffd27f">◐ 부분충족 ${pt.m}/${pt.n}</b><br>${esc((x.why||{}).sentence)||''}</div></div>`;
+     }else{
+       h+=`<div class="slot pass"><span class="rk">${i+1}</span><span class="nm">${esc(x.spot)}</span>`+
+          `<div class="tip"><b style="color:#8ff0ab">✔ LLM 검수 통과</b><br>${esc((x.why||{}).sentence)||'추천 이유 정보 없음'}</div></div>`;
+     }
+   }else{
+     h+=`<div class="slot empty"><span class="rk">${i+1}</span><span class="nm">—</span></div>`;
+   }
+ }
+ h+='</div>';
+ $('final').innerHTML=h;
+ const npart=rows.filter(r=>(r.why||{}).partial).length;
+ $('finalmeta').textContent=`통과 ${rows.length-npart}개 + 부분충족 ${npart}개 / ${FINAL_SIZE}칸`;
+}
+
+function renderWhy(){
+ const d=curDia();if(!d)return;
+ const spots=(d.methods['llm']||[]).slice(0,FINAL_SIZE);
+ $('why').innerHTML=spots.map((x,ri)=>{
+   const w=x.why||{};const us=Object.entries(w.utils||{});
+   const ubars=us.map(([sid,v])=>{const nm=(d.speakers.find(s=>s.sid===sid)||{}).name||sid;
+     return `<div class="ub"><div class="lab"><span>${esc(nm)}</span><span>${(+v).toFixed(2)}</span></div>`+
+       `<div class="track"><div class="fill" style="width:${Math.round(v*100)}%"></div></div></div>`;}).join('');
+   const matched=(w.matched||[]).map(mm=>`<span class="pill">${esc(mm.name)}: ${(mm.aspects||[]).join('·')}</span>`).join('')||'<span class="badge">직접 매칭 없음</span>';
+   const cats=(w.top_cats||[]).filter(c=>c);
+   return `<div class="whyrow"><div class="h"><span>#${ri+1} ${esc(x.spot)} ${w.partial?`<span class="badge" style="color:#b8860b">◐ 부분충족 ${w.partial.m}/${w.partial.n}</span>`:`<span class="badge" style="color:#1e8449">LLM 통과</span>`}</span>`+
+     `<span class="badge">최소만족 ${x.least} · 평균 ${x.avg}</span></div>`+
+     `<div class="sent">${esc(w.sentence)||'<span class="badge">이유 미생성</span>'}</div>`+
+     `<div>${matched}</div>`+
+     (cats.length?`<div class="catline">장소 성격: ${cats.map(c=>`<b>${esc(c)}</b>`).join(', ')}</div>`:'')+
+     `<div class="uwrap">${ubars}</div></div>`;
+ }).join('')||'<span class="badge">통과 장소 없음</span>';
+}
+
+$('region').onchange=fillDialogues;
+$('dialogue').onchange=render;
+fillDialogues();
+</script>
+</body></html>
