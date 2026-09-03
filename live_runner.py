@@ -38,7 +38,8 @@ PRECOMPUTED_ROOT = V6 / "output_v6"
 PRECOMPUTED_STEM = "group_travel_dialogues"
 REGIONS = ["강원도", "경상남도", "경상북도", "수도권", "전라남도",
            "전라북도", "제주도", "충청남도", "충청북도"]
-GEN_CONCURRENCY = os.environ.get("DEMO_GEN_CONCURRENCY", "16")
+GEN_CONCURRENCY = os.environ.get("DEMO_GEN_CONCURRENCY", "8")   # Gemma 배칭 서버 배치 크기와 맞춤
+TOPK = os.environ.get("DEMO_TOPK", "30")   # 검수 깊이 (배치 실험은 50; 데모 속도를 위해 30)
 
 sys.path.insert(0, str(V6))
 import analyze_results_v4 as base            # noqa: E402
@@ -225,7 +226,7 @@ def run_live(did: str, region: str, *, text: str | None = None,
                "--v3-root", str(RUNS), "--v3-output-name", "v3",
                "--stem", did, "--region", region,
                "--output-root", str(v4_root),
-               "--method", "serial_embed_nash", "--topk", "50", "--limit", "1",
+               "--method", "serial_embed_nash", "--topk", TOPK, "--limit", "1",
                "--reason-mode", "llm", "--reviews-dir", str(V3 / "리뷰데이터"),
                "--filter-criterion", "hybrid"],
               cwd=V6, env=env, log=log)
@@ -265,7 +266,8 @@ def precomputed_html(did: str, region: str) -> Path | None:
     out_dir = RUNS / "precomputed" / did
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f"{region}.html"
-    if out.exists() and out.stat().st_mtime > marker.stat().st_mtime:
+    newest = max([f.stat().st_mtime for f in marker.iterdir()] + [marker.stat().st_mtime])
+    if out.exists() and out.stat().st_mtime > newest:
         return out
     try:
         html = build_dashboard_html(stem_dir, did, region, title_note=f"사전 계산 결과 · {region}")
