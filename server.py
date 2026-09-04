@@ -126,6 +126,17 @@ def _worker() -> None:
 threading.Thread(target=_worker, daemon=True, name="demo-worker").start()
 
 
+def _warm_v3_worker() -> None:
+    """서버 기동 시 v3 상주 워커(임베딩 모델·권역 인덱스)를 미리 띄워 첫 실행 지연을 없앤다."""
+    try:
+        lr.WORKER.ensure()
+    except Exception as e:  # noqa: BLE001
+        print(f"[server] v3 워커 워밍업 실패: {e}", flush=True)
+
+
+threading.Thread(target=_warm_v3_worker, daemon=True, name="v3-warm").start()
+
+
 # ------------------------------------------------------------
 # API
 # ------------------------------------------------------------
@@ -165,7 +176,7 @@ def health():
         q = len(QUEUE)
         cur = _current.to_dict() if _current else None
     return {"status": "ok", "gemma": gemma_ok(), "queue": q, "current": cur,
-            "time": time.time()}
+            "worker": lr.WORKER.status(), "time": time.time()}
 
 
 @app.get("/api/regions")
